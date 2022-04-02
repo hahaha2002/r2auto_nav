@@ -30,6 +30,7 @@ import time
 import matplotlib.pyplot as plt
 from PIL import Image
 import scipy.stats
+import bug0 as b0
 
 # Adjustable variables to calibrate wall follower
 
@@ -291,6 +292,7 @@ class AutoNav(Node):
     #Main wall-follower logic code ; Left-wall following
     def pick_direction(self):
         #self.get_logger().info('In pick direction:')
+        rclpy.spin_once(self)
         self.laserFront = self.laser_range[354:359]
         self.laserFront = np.append(self.laserFront, self.laser_range[0:6])
         self.front_dist = np.nan_to_num(np.nanmean(self.laserFront), copy = False, nan = 100)
@@ -417,6 +419,28 @@ class AutoNav(Node):
             self.publisher_.publish(twist)
             rclpy.spin_once(self)
         self.stopbot()
+    
+    
+    
+    ############################################################################3BUG STUFF#########################################################
+    '''
+    def hottest_point(self):
+        global waypoint_dictionary, waypoint_array
+        return max(waypoint_dictionary[max(waypoint_array)])
+    '''
+    def bugAlgo(self):
+        b0.getTarget(2.0,-6.0,2.0)  
+        b0.main()
+        
+    def bugWall(self):
+        checkVal = b0.BugNav().check_whether_to_switch()
+        while not checkVal:
+            self.pick_direction()
+            checkVal = b0.BugNav().check_whether_to_switch()
+        print('switch back')
+        b0.BugNav().change_bug_switch(1)
+        self.stopbot()
+        
 
     #main navigation code
     def mover(self):
@@ -479,7 +503,7 @@ class AutoNav(Node):
 def main(args=None):
     rclpy.init(args=args)
     auto_nav = AutoNav()
-    auto_nav.mover()
+    auto_nav.bugAlgo()
     # Destroy the node explicitly
     # (optional - otherwise it will be done automatically
     # when the garbage collector destroys the node object)
