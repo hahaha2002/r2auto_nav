@@ -31,6 +31,8 @@ import matplotlib.pyplot as plt
 from PIL import Image
 import scipy.stats
 import bug0 as b0
+import warnings
+warnings.filterwarnings("ignore")
 
 # Adjustable variables to calibrate wall follower
 
@@ -54,6 +56,9 @@ isTargetDetected = False
 isDoneShooting = False
 isLoadingBayFound = False
 isDoneLoading = False
+firstInit_Bug_navNav = True
+firstInit_auto_nav = True
+count = 0
 
 #Robot state dictionary
 state_ = 0
@@ -98,7 +103,6 @@ class AutoNav(Node):
 
     def __init__(self):
         super().__init__('auto_nav')
-        
         # create publisher for moving TurtleBot
         self.publisher_ = self.create_publisher(Twist, 'cmd_vel', 10)
         # self.get_logger().info('Created publisher')
@@ -419,30 +423,9 @@ class AutoNav(Node):
             self.publisher_.publish(twist)
             rclpy.spin_once(self)
         self.stopbot()
-    
-    
-    
-    ############################################################################3BUG STUFF#########################################################
-    '''
-    def hottest_point(self):
-        global waypoint_dictionary, waypoint_array
-        return max(waypoint_dictionary[max(waypoint_array)])
-    '''
-    def bugAlgo(self):
-        b0.getTarget(2.0,-6.0,2.0)  
-        b0.main()
         
-    def bugWall(self):
-        checkVal = b0.BugNav().check_whether_to_switch()
-        while not checkVal:
-            self.pick_direction()
-            checkVal = b0.BugNav().check_whether_to_switch()
-        print('switch back')
-        b0.BugNav().change_bug_switch(1)
-        self.stopbot()
         
-
-    #main navigation code
+#main navigation code
     def mover(self):
         global myoccdata, isTargetDetected, isDoneShooting, isLoadingBayFound, isDoneLoading, position, d
         try:
@@ -498,12 +481,28 @@ class AutoNav(Node):
             # stop moving
             self.stopbot()
             #cv2.imwrite('mazemapfinally.png', myoccdata)
+  
+    ############################################################################3BUG STUFF#########################################################      
+        
+    def bugAlgo(self):
+        b0.getTarget(2.0,-4.0,2.0)  
+        b0.BugNav().start()
+    
+    def bugWall(self):
+        checkVal = b0.BugNav().check_whether_to_switch()
+        while not checkVal:
+            self.pick_direction()
+            checkVal = b0.BugNav().check_whether_to_switch()
+        print('switch back')
+        b0.BugNav().change_bug_switch(1)
 
 
 def main(args=None):
     rclpy.init(args=args)
     auto_nav = AutoNav()
     auto_nav.bugAlgo()
+    #bug_navNav = Bug_navNav()
+    #bug_navNav.bugAlgo()
     # Destroy the node explicitly
     # (optional - otherwise it will be done automatically
     # when the garbage collector destroys the node object)
