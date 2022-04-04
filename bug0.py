@@ -12,7 +12,7 @@ import numpy as np
 
 import math
 import navigation as nav
-from navigation import AutoNav
+
 
 
 bugSwitch = True
@@ -176,6 +176,8 @@ class BugNav(Node):
                 print('Time to change to wall')
                 self.change_bug_switch(0)
                 nav.AutoNav().bugWall()
+                
+
         # bug_state change conditions
         if math.fabs(err_yaw) > yaw_precision_:
             #print ('Yaw error: [%s]' % err_yaw)
@@ -237,18 +239,20 @@ class BugNav(Node):
         twist.angular.z = 0.0
         # time.sleep(1)
         self.bug_publisher_.publish(twist)     
-        
+
+
+'''
 def main(args=None):
     global pub
     #rclpy.init(args=args)
     bug_nav = BugNav()
     bug_nav.start()
-    
     # Destroy the node explicitly
     # (optional - otherwise it will be done automatically
     # when the garbage collector destroys the node object)
     bug_nav.destroy_node()
-    #rclpy.shutdown()
+    #ssrclpy.shutdown()
 
 if __name__ == '__main__':
     main()
+'''
