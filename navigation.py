@@ -31,8 +31,7 @@ import matplotlib.pyplot as plt
 from PIL import Image
 import scipy.stats
 import bug0 as b0
-import warnings
-warnings.filterwarnings("ignore")
+
 
 # Adjustable variables to calibrate wall follower
 
@@ -56,9 +55,12 @@ isTargetDetected = False
 isDoneShooting = False
 isLoadingBayFound = False
 isDoneLoading = False
-firstInit_Bug_navNav = True
-firstInit_auto_nav = True
-count = 0
+isMapDone = False
+
+#Waypoint dictionary
+waypoint_dict = {
+    1: 'nil'
+}
 
 #Robot state dictionary
 state_ = 0
@@ -72,9 +74,8 @@ state_dict_ = {
     'A': 'NFC Found, waiting to receive paylaod',
     'B': 'Payload received, continuing wall-following',
     'C': 'Hot target detected, initiating firing sequence',
+    'Cb': 'Hot target detected, waypoint dropped',
     'D': 'Target eliminated',
-    
-    
 }
 
 # code from https://automaticaddison.com/how-to-convert-a-quaternion-into-euler-angles-in-python/
@@ -160,17 +161,27 @@ class AutoNav(Node):
         self.scan_subscription  # prevent unused variable warning
 
     def target_callback(self, msg):
-        global isTargetDetected, isDoneShooting
+        global isTargetDetected, isDoneShooting, waypoint_dict,position
         #self.get_logger().info('In target_callback')
         #self.get_logger().info('I heard: "%s"' % msg.data)
         if (msg.data == 'Detected'):
             isTargetDetected = True
             isDoneShooting = False
+            
+            ###############################################################
+            
+            
+            #################################################################
+            waypoint_dict[2] = position #make RPi send temp, replace 2 with that temp
+
+                                                                        
             self.change_state('C')
         elif (msg.data == 'FINISHED SHOOTING'):
             isDoneShooting = True
             isTargetDetected = False
             self.change_state('D')
+            ######################################################
+            self.bugAlgo()
         else:
             isTargetDetected = False
         
@@ -463,7 +474,7 @@ class AutoNav(Node):
                             self.stopbot()
                             rclpy.spin_once(self)
                     # Halt wall following and allow targetting code to engage the target
-                    if isTargetDetected:
+                    if isTargetDetected and isMapDone:
                         self.stopbot()
                         while (not isDoneShooting):
                             #print('Target detected, initiating firing sequence!')
@@ -485,7 +496,11 @@ class AutoNav(Node):
     ############################################################################3BUG STUFF#########################################################      
         
     def bugAlgo(self):
-        b0.getTarget(2.0,-4.0,2.0)  
+        des_waypoint = (float(waypoint_dict[max(waypoint_dict)][0]),
+                       float(waypoint_dict[max(waypoint_dict)][1]),
+                       float(waypoint_dict[max(waypoint_dict)][2]))
+        b0.getTarget(des_waypoint)
+        #b0.getTarget(2.0,-4.0,2.0)
         b0.BugNav().start()
     
     def bugWall(self):
@@ -500,9 +515,8 @@ class AutoNav(Node):
 def main(args=None):
     rclpy.init(args=args)
     auto_nav = AutoNav()
-    auto_nav.bugAlgo()
-    #bug_navNav = Bug_navNav()
-    #bug_navNav.bugAlgo()
+    auto_nav.mover()
+    #auto_nav.bugAlgo())
     # Destroy the node explicitly
     # (optional - otherwise it will be done automatically
     # when the garbage collector destroys the node object)

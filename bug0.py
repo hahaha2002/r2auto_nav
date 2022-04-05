@@ -241,8 +241,7 @@ class BugNav(Node):
         self.bug_publisher_.publish(twist)     
 
 
-'''
-lols
+'''s
 def main(args=None):
     global pub
     #rclpy.init(args=args)
