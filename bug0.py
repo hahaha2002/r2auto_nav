@@ -242,6 +242,7 @@ class BugNav(Node):
 
 
 '''
+lols
 def main(args=None):
     global pub
     #rclpy.init(args=args)
