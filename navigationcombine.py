@@ -34,13 +34,13 @@ import scipy.stats
 
 # Adjustable variables to calibrate wall follower
 
-d = 0.45 #Distance from wall
+d = 0.4 #Distance from wall
 speedchange = 0.15 #Linear speed
 back_angles = range(150, 210 + 1, 1)
-turning_speed_wf_fast = 0.80  #Fast rotate speed
-turning_speed_wf_slow = 0.5  #Slow rotate speed
+turning_speed_wf_fast = 0.70  #Fast rotate speed
+turning_speed_wf_slow = 0.4  #Slow rotate speed
 snaking_radius = d - 0.07  #Amount of variation accepted from wall
-cornering_speed_constant = 0.6 #percentage of speed change wwhen cornering
+cornering_speed_constant = 0.9 #percentage of speed change wwhen cornering
 
 #variables for map file
 scanfile = 'lidar.txt'
@@ -230,7 +230,7 @@ class AutoNav(Node):
             orientation_quat.x, orientation_quat.y, orientation_quat.z, orientation_quat.w)
         position = [round(msg.pose.pose.position.x,1),round(msg.pose.pose.position.y,1),round(msg.pose.pose.position.z,1)]
        #print(self.roll,self.pitch,self.yaw)
-        #print(position)
+        print(position)
 
     def occ_callback(self, msg):
         global myoccdata
@@ -485,7 +485,7 @@ class AutoNav(Node):
             self.initialmove()
             
             initial_time = time.time()
-            start_time = initial_time + 10
+            start_time = initial_time + 10 # to ensure start point is accessible afterwards
             start_position = []
             while rclpy.ok():                   
                 if self.laser_range.size != 0:
@@ -493,10 +493,8 @@ class AutoNav(Node):
                     if int(time.time()) == int(start_time):
                         start_position = position
                         print('Starting point: ',start_position)
-                        time.sleep(0.6)
-                    if position == start_position and (time.time()-start_time > 2):
-                        d = d+0.07
-                        
+                    if position == start_position and (time.time()-start_time > 60):
+                        d = d+0.05
                         start_time = time.time()
                         start_position = position
                         print("Returned to start point without NFC, distance increased by 7cm")
@@ -696,7 +694,7 @@ class AutoNav(Node):
                        float(waypoint_dict[max(waypoint_dict)][2]))
         getTarget(des_waypoint)
         '''
-        self.getTarget(0.0,-1.5,0.0)
+        self.getTarget(-0.4,-0.8,0.0)
         self.start()
     
     def bugWall(self):
@@ -711,8 +709,8 @@ class AutoNav(Node):
 def main(args=None):
     rclpy.init(args=args)
     auto_nav = AutoNav()
-    #auto_nav.mover()
-    auto_nav.bugAlgo()
+    auto_nav.mover()
+    #auto_nav.bugAlgo()
     # Destroy the node explicitly
     # (optional - otherwise it will be done automatically
     # when the garbage collector destroys the node object)
