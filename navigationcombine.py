@@ -12,17 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+os.system("gnome-terminal --command='ros2 launch turtlebot3_cartographer cartographer.launch.py'")
+# open up rslam everytime run
+
 import rclpy
 from rclpy.node import Node
 from nav_msgs.msg import Odometry
-from geometry_msgs.msg import Twist, Point
+from geometry_msgs.msg import Twist, Point, Pose
 from rclpy.qos import qos_profile_sensor_data
 from sensor_msgs.msg import LaserScan
 from nav_msgs.msg import OccupancyGrid
 from std_msgs.msg import Float64MultiArray, String
 import numpy as np
 import tf2_ros
-from tf2_ros import LookupException, ConnectivityException, ExtrapolationException
+from tf2_ros import LookupException, ConnectivityException, ExtrapolationException, TransformException
 import cv2
 import math
 import cmath
@@ -31,9 +35,14 @@ import matplotlib.pyplot as plt
 from PIL import Image
 import scipy.stats
 
+# Stores known frames and offers frame graph requests
+from tf2_ros.buffer import Buffer
+
+# Easy way to request and receive coordinate frame transform information
+from tf2_ros.transform_listener import TransformListener
+
 
 # Adjustable variables to calibrate wall follower
-
 d = 0.4 #Distance from wall
 speedchange = 0.15 #Linear speed
 back_angles = range(150, 210 + 1, 1)
@@ -196,6 +205,19 @@ class AutoNav(Node):
         self.laser_range = np.array([])
         #self.tfBuffer = tf2_ros.Buffer()
         #self.tfListener = tf2_ros.TransformListener(self.tfBuffer, self)
+        
+        ### Map2base requirements
+        self.declare_parameter('target_frame', 'base_footprint')
+        self.target_frame = self.get_parameter(
+        'target_frame').get_parameter_value().string_value
+    
+        self.tf_buffer = Buffer()
+        self.tf_listener = TransformListener(self.tf_buffer,self, spin_thread=True)
+        self.mapbase = None
+        self.map2base = self.create_publisher(Pose, '/map2base', 10)
+        timer_period = 0.05
+        self.timer = self.create_timer(timer_period, self.timer_callback)
+
 
     def target_callback(self, msg):
         global isTargetDetected, isDoneShooting, waypoint_dict,position
@@ -230,7 +252,7 @@ class AutoNav(Node):
             orientation_quat.x, orientation_quat.y, orientation_quat.z, orientation_quat.w)
         position = [round(msg.pose.pose.position.x,1),round(msg.pose.pose.position.y,1),round(msg.pose.pose.position.z,1)]
        #print(self.roll,self.pitch,self.yaw)
-        print(position)
+        #print(position)
 
     def occ_callback(self, msg):
         global myoccdata
@@ -279,6 +301,31 @@ class AutoNav(Node):
         if msg.data == 'FINISH LOADING':
             isDoneLoading = True
             self.change_state('B')
+    
+    def timer_callback(self): # for publishing map2base to obtain yaw
+        # create numpy array
+        msg = Pose()
+        from_frame_rel = self.target_frame
+        to_frame_rel = 'map'
+        now = rclpy.time.Time()
+        try:
+            # while not self.tf_buffer.can_transform(to_frame_rel, from_frame_rel, now, timeout = Durati>
+            self.mapbase = self.tf_buffer.lookup_transform(
+                        to_frame_rel,
+                        from_frame_rel,
+                        now)
+                        # ,
+                        # timeout = Duration(seconds=1.0))
+        except TransformException as ex:
+            # self.get_logger().info(
+                # f'Could not transform {to_frame_rel} to {from_frame_rel}: {ex}')
+            return
+        msg.position.x = self.mapbase.transform.translation.x 
+        msg.position.y = self.mapbase.transform.translation.y
+        msg.orientation = self.mapbase.transform.rotation
+
+        self.map2base.publish(msg)
+        self.get_logger().info('Publishing: "%s"' % msg)
             
     # function to rotate the TurtleBot
     def rotatebot(self, rot_angle):
@@ -383,8 +430,12 @@ class AutoNav(Node):
         elif self.leftfront_dist > d and self.front_dist < d and self.rightfront_dist > d:
             state_description = 'case 2 - front'
             self.change_state(1)
+            self.stopbot()
+            self.rotatebot(80)
+            '''
             msg.linear.x = cornering_speed_constant * speedchange
-            msg.angular.z = -turning_speed_wf_fast
+            msg.angular.z = turning_speed_wf_fast
+            '''
 
         elif (self.leftfront_dist < d and self.front_dist > d and self.rightfront_dist > d):
             if (self.leftfront_dist < snaking_radius):
@@ -470,6 +521,7 @@ class AutoNav(Node):
             self.publisher_.publish(twist)
             rclpy.spin_once(self)
         self.stopbot()
+        self.rotatebot(-45)
         
         
 #main navigation code
@@ -487,7 +539,8 @@ class AutoNav(Node):
             initial_time = time.time()
             start_time = initial_time + 10 # to ensure start point is accessible afterwards
             start_position = []
-            while rclpy.ok():                   
+            while rclpy.ok():
+                rclpy.spin_once(self)
                 if self.laser_range.size != 0:
                     #Increases distance from wall if NFC still not detected after one round
                     if int(time.time()) == int(start_time):
