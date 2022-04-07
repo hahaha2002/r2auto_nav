@@ -62,7 +62,7 @@ i2c = busio.I2C(board.SCL, board.SDA)
 amg = adafruit_amg88xx.AMG88XX(i2c)
 
 ## Set up servo
-servo_pin = 19
+servo_pin = 12
 servo = pigpio.pi()
 servo.set_mode(servo_pin, pigpio.OUTPUT)
 servo.set_PWM_frequency(servo_pin,50)
@@ -71,8 +71,10 @@ servo.set_servo_pulsewidth(servo_pin, 500)
 ## Set up motor
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False) # Ignore warning for now
-motor_pin = 12
-GPIO.setup(motor_pin, GPIO.OUT)
+motor_pin1 = 13
+motor_pin2 = 19
+GPIO.setup(motor_pin1, GPIO.OUT)
+GPIO.setup(motor_pin2, GPIO.OUT)
 
 ## Set up button
 button_pin_out = 17
@@ -400,7 +402,8 @@ class mission(Node):
         global target_status, finish_shooting_msg, motor_pin
 
         # run  motor
-        GPIO.output(motor_pin, 1)
+        GPIO.output(motor_pin1, 1)
+        GPIO.output(motor_pin2, 1)
 
         # open servo gate
         print("Open servo gate")
@@ -416,7 +419,8 @@ class mission(Node):
         self.get_logger().info('Publishing: "%s"' % target_status)
 
         # Stop the DC Motor
-        GPIO.output(motor_pin, 0)
+        GPIO.output(motor_pin1, 0)
+        GPIO.output(motor_pin2, 0)
         self.get_logger().info("Stopped the DC Motor")
 
         # Cleanup all GPIO
