@@ -219,13 +219,13 @@ class mission(Node):
         rclpy.spin_once(self)
         # get current yaw angle
         current_yaw = self.yaw
-        print(current_yaw)
+        #print(current_yaw)
         # we are going to use complex numbers to avoid problems when the angles go from
         # 360 to 0, or from -180 to 180
         c_yaw = complex(math.cos(current_yaw),math.sin(current_yaw))
         # calculate desired yaw
         target_yaw = current_yaw + math.radians(rot_angle)
-        print(target_yaw)
+        #print(target_yaw)
         # convert to complex notation
         c_target_yaw = complex(math.cos(target_yaw),math.sin(target_yaw))
         # divide the two complex numbers to get the change in direction
@@ -379,10 +379,10 @@ class mission(Node):
         time.sleep(1)
         # move forward until close enough to target
         rclpy.spin_once(self)
-        print(self.distance)
+        #print(self.distance)
         if self.distance > 0.7:
             while self.distance > 0.7:
-                print(self.distance)
+                #print(self.distance)
                 rclpy.spin_once(self)
                 self.move_forward()
             self.stopbot()
