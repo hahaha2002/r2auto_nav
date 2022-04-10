@@ -146,7 +146,7 @@ class mission(Node):
         
         ###############################################
         ###############################################
-        msg.data = [target_status,str(20)]
+        msg.data = target_status
         self.firing_publisher.publish(msg)
 
     def lidar_callback(self, msg):
