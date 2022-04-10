@@ -19,7 +19,7 @@ import numpy as np
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
-from geometry_msgs.msg import Twist as Twist
+from geometry_msgs.msg import Twist, Pose
 from rclpy.qos import qos_profile_sensor_data
 from sensor_msgs.msg import LaserScan
 from nav_msgs.msg import Odometry
@@ -30,7 +30,7 @@ import cmath
 isDoneLoading = False
 isDoneShooting = False
 rotatechange = 0.5
-speedchange = 0.7
+speedchange = 0.2
 min_temp_threshold = 30.0
 max_temp_threshold = 35.0
 detecting_threshold = 32.0
@@ -52,7 +52,7 @@ except:
 
 ## INITIALISE NFC SENSOR
 try:
-    pn532 = PN532_I2C(debug=False, reset=20, req=16)
+    pn532 = PN532_I2C(debug=False, reset=4, req=17)
     pn532.SAM_configuration()
 except:
     print('Please check wiring of NFC sensor')
@@ -62,7 +62,7 @@ i2c = busio.I2C(board.SCL, board.SDA)
 amg = adafruit_amg88xx.AMG88XX(i2c)
 
 ## Set up servo
-servo_pin = 12
+servo_pin = 19
 servo = pigpio.pi()
 servo.set_mode(servo_pin, pigpio.OUTPUT)
 servo.set_PWM_frequency(servo_pin,50)
@@ -71,10 +71,8 @@ servo.set_servo_pulsewidth(servo_pin, 500)
 ## Set up motor
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False) # Ignore warning for now
-motor_pin1 = 13
-motor_pin2 = 19
-GPIO.setup(motor_pin1, GPIO.OUT)
-GPIO.setup(motor_pin2, GPIO.OUT)
+motor_pin = 13
+GPIO.setup(motor_pin, GPIO.OUT)
 
 ## Set up button
 button_pin_out = 17
@@ -169,7 +167,7 @@ class mission(Node):
     def pos_callback(self, msg):
         global euler_from_quaternion, orientation_quat
         orientation_quat =  msg.orientation
-        self.roll, self.pitch, self.yaw = euler_from_quaternion(orientation_quat.x, orientation_quat.y, orientation_quat.z, orientation_quat.w)
+        self.roll, self.pitch, self.yaw = self.euler_from_quaternion(orientation_quat.x, orientation_quat.y, orientation_quat.z, orientation_quat.w)
 
 
     ################################################################
@@ -218,18 +216,19 @@ class mission(Node):
         # self.get_logger().info('In rotatebot')
         # create Twist object
         twist = Twist()
-        rclpy.spin_once(self)
+
         # get current yaw angle
         current_yaw = self.yaw
-        #print(current_yaw)
+        # log the info
+        self.get_logger().info('Current: %f' % math.degrees(current_yaw))
         # we are going to use complex numbers to avoid problems when the angles go from
         # 360 to 0, or from -180 to 180
         c_yaw = complex(math.cos(current_yaw),math.sin(current_yaw))
         # calculate desired yaw
         target_yaw = current_yaw + math.radians(rot_angle)
-        #print(target_yaw)
         # convert to complex notation
         c_target_yaw = complex(math.cos(target_yaw),math.sin(target_yaw))
+        self.get_logger().info('Desired: %f' % math.degrees(cmath.phase(c_target_yaw)))
         # divide the two complex numbers to get the change in direction
         c_change = c_target_yaw / c_yaw
         # get the sign of the imaginary component to figure out which way we have to turn
@@ -237,14 +236,14 @@ class mission(Node):
         # set linear speed to zero so the TurtleBot rotates on the spot
         twist.linear.x = 0.0
         # set the direction to rotate
-        twist.angular.z = c_change_dir * rotatechange
+        twist.angular.z = c_change_dir * 0.5
         # start rotation
         self.vel_publisher.publish(twist)
 
         # we will use the c_dir_diff variable to see if we can stop rotating
         c_dir_diff = c_change_dir
-        # self.get_logger().info('c_change_dir: %f c_dir_diff: %f' % (c_change_dir, c_di>
-        # if the rotation direction was 1.0, then we will want to stop when the c_dir_di>
+        # self.get_logger().info('c_change_dir: %f c_dir_diff: %f' % (c_change_dir, c_dir_diff))
+        # if the rotation direction was 1.0, then we will want to stop when the c_dir_diff
         # becomes -1.0, and vice versa
         while(c_change_dir * c_dir_diff > 0):
             # allow the callback functions to run
@@ -252,13 +251,18 @@ class mission(Node):
             current_yaw = self.yaw
             # convert the current yaw to complex form
             c_yaw = complex(math.cos(current_yaw),math.sin(current_yaw))
+            self.get_logger().info('Current Yaw: %f' % math.degrees(current_yaw))
             # get difference in angle between current and target
             c_change = c_target_yaw / c_yaw
             # get the sign to see if we can stop
             c_dir_diff = np.sign(c_change.imag)
+            # self.get_logger().info('c_change_dir: %f c_dir_diff: %f' % (c_change_dir, c_dir_diff))
 
-        self.stopbot()
-
+        self.get_logger().info('End Yaw: %f' % math.degrees(current_yaw))
+        # set the rotation speed to 0
+        twist.angular.z = 0.0
+        # stop the rotation
+        self.vel_publisher.publish(twist)
 
     def move_servo(self, direction):
         global servo_pin
@@ -346,17 +350,13 @@ class mission(Node):
                 twist = Twist()
                 twist.linear.x = 0.0
                 twist.angular.z = rotatechange
-                time.sleep(1)
                 self.vel_publisher.publish(twist)
-                time.sleep(1)
             elif max_column > 4:
                 # spin clockwise
                 twist = Twist()
                 twist.linear.x = 0.0
                 twist.angular.z = rotatechange * -1
-                time.sleep(1)
                 self.vel_publisher.publish(twist)
-                time.sleep(1)
             else:
                 centered = True
         print('centered')
@@ -364,7 +364,8 @@ class mission(Node):
 
     def targetting(self):
         global message_sent, servo_pin, motor_pin
-        self.rotate_angle = 70
+        self.rotate_angle = 65
+        self.d = 0.8
         print('Scanning for hot target...')
 
         # find the target
@@ -382,19 +383,25 @@ class mission(Node):
         # move forward until close enough to target
         rclpy.spin_once(self)
         #print(self.distance)
-        if self.distance > 0.7:
-            while self.distance > 0.7:
-                #print(self.distance)
+        if self.distance > self.d:
+            while self.distance > self.d:
+                print(self.distance)
                 rclpy.spin_once(self)
                 self.move_forward()
             self.stopbot()
 
             # Recheck center
             print('rotating back')
+            rclpy.spin_once(self)
+            self.rotate(1)
             self.rotate(self.rotate_angle)
+            time.sleep(1)
+            rclpy.spin_once(self)
             print('centering again')
             self.centre_target()
             print('rotate again')
+            rclpy.spin_once(self)
+            self.rotate(-1)
             self.rotate(-self.rotate_angle)
         print("Ready to fire!!!")
 
@@ -402,8 +409,8 @@ class mission(Node):
         global target_status, finish_shooting_msg, motor_pin
 
         # run  motor
-        GPIO.output(motor_pin1, 1)
-        GPIO.output(motor_pin2, 1)
+        GPIO.output(motor_pin, 1)
+        time.sleep(2)
 
         # open servo gate
         print("Open servo gate")
@@ -419,8 +426,7 @@ class mission(Node):
         self.get_logger().info('Publishing: "%s"' % target_status)
 
         # Stop the DC Motor
-        GPIO.output(motor_pin1, 0)
-        GPIO.output(motor_pin2, 0)
+        GPIO.output(motor_pin, 0)
         self.get_logger().info("Stopped the DC Motor")
 
         # Cleanup all GPIO
