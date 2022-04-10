@@ -143,7 +143,10 @@ class mission(Node):
     def send_firing_status(self):
         global target_status
         msg = String()
-        msg.data = target_status
+        
+        ###############################################
+        ###############################################
+        msg.data = [target_status,'20']
         self.firing_publisher.publish(msg)
 
     def lidar_callback(self, msg):
