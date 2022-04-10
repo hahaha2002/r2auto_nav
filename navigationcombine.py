@@ -573,8 +573,16 @@ class AutoNav(Node):
             self.stopbot()
             #cv2.imwrite('mazemapfinally.png', myoccdata)
   
-    ############################################################################3BUG STUFF#########################################################      
-    ### Bug codes
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
+    #########################BUG ALGORITHM CODES##############################
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
+    #Bug algo works in gazebo but not IRL due to odom not resetting...
+    #This algo should be able to waypoints dropped by RPi since ODOM will have a fixed offset
+    #Can be investigated further for future projects...
     
     def bug_scan_callback(self, msg):
         global regions_
@@ -688,8 +696,6 @@ class AutoNav(Node):
             self.stopbot()
             self.change_bug_state(2)
  
-    
-
     def normalize_angle(self,angle):
         if(math.fabs(angle) > math.pi):
             angle = angle - (2 * math.pi * angle) / (math.fabs(angle))
@@ -735,13 +741,12 @@ class AutoNav(Node):
     
     
     def bugAlgo(self):
-        '''
-        des_waypoint = (float(waypoint_dict[max(waypoint_dict)][0]),
-                       float(waypoint_dict[max(waypoint_dict)][1]),
-                       float(waypoint_dict[max(waypoint_dict)][2]))
+        
+        #des_waypoint = (float(waypoint_dict[max(waypoint_dict)][0]),
+        #               float(waypoint_dict[max(waypoint_dict)][1]),
+        #              float(waypoint_dict[max(waypoint_dict)][2]))
         getTarget(des_waypoint)
-        '''
-        self.getTarget(0.5,0.0,0.0)
+        #self.getTarget(0.5,0.0,0.0)
         self.start()
     
     def bugWall(self):
