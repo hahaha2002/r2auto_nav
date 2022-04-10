@@ -223,12 +223,11 @@ class AutoNav(Node):
         global isTargetDetected, isDoneShooting, waypoint_dict,position
         #self.get_logger().info('In target_callback')
         #self.get_logger().info('I heard: "%s"' % msg.data)
-        if (msg.data[0] == 'Detected'):
+        if (msg.data == 'Detected'):
             isTargetDetected = True
             isDoneShooting = False            
             ###############################################################
             
-            waypoint_temp = msg.data[1]
             #################################################################
             waypoint_dict[2] = position #make RPi send temp, replace 2 with that temp
 
