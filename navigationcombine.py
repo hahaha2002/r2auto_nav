@@ -223,13 +223,12 @@ class AutoNav(Node):
         global isTargetDetected, isDoneShooting, waypoint_dict,position
         #self.get_logger().info('In target_callback')
         #self.get_logger().info('I heard: "%s"' % msg.data)
-        if (msg.data == 'Detected'):
+        if (msg.data[0] == 'Detected'):
             isTargetDetected = True
-            isDoneShooting = False
-            
+            isDoneShooting = False            
             ###############################################################
             
-            
+            waypoint_temp = msg.data[1]
             #################################################################
             waypoint_dict[2] = position #make RPi send temp, replace 2 with that temp
 
@@ -251,7 +250,7 @@ class AutoNav(Node):
         self.roll, self.pitch, self.yaw = euler_from_quaternion(
             orientation_quat.x, orientation_quat.y, orientation_quat.z, orientation_quat.w)
         position = [round(msg.pose.pose.position.x,1),round(msg.pose.pose.position.y,1),round(msg.pose.pose.position.z,1)]
-       #print(self.roll,self.pitch,self.yaw)
+        #print(self.roll,self.pitch,self.yaw)
         #print(position)
 
     def occ_callback(self, msg):
@@ -608,7 +607,7 @@ class AutoNav(Node):
         self.desired_position_.z = z_coord
   
     def start(self):
-        global isArrived
+        global isArrived, waypoint_dict
         try:
             rclpy.spin_once(self)
             print("Acquiring lidar data")
@@ -634,6 +633,7 @@ class AutoNav(Node):
         # Ctrl-c detected
         finally:
             # stop moving
+            print(waypoint_dict)
             self.stopbot()
             
     def clbk_odom(self, msg):
@@ -742,7 +742,7 @@ class AutoNav(Node):
                        float(waypoint_dict[max(waypoint_dict)][2]))
         getTarget(des_waypoint)
         '''
-        self.getTarget(-0.4,-0.8,0.0)
+        self.getTarget(0.5,0.0,0.0)
         self.start()
     
     def bugWall(self):
