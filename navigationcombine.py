@@ -43,7 +43,7 @@ from tf2_ros.transform_listener import TransformListener
 
 
 # Adjustable variables to calibrate wall follower
-d = 0.4 #Distance from wall
+d = 0.45 #Distance from wall
 speedchange = 0.15 #Linear speed
 back_angles = range(150, 210 + 1, 1)
 turning_speed_wf_fast = 0.70  #Fast rotate speed
@@ -256,7 +256,7 @@ class AutoNav(Node):
 
     def occ_callback(self, msg):
         global myoccdata
-        self.get_logger().info('In occ_callback')
+        #self.get_logger().info('In occ_callback')
         # create numpy array
         msgdata = np.array(msg.data)
         # compute histogram to identify percent of bins with -1
@@ -264,7 +264,7 @@ class AutoNav(Node):
         #calculate total number of bins
         total_bins = msg.info.width * msg.info.height
         # log the info
-        self.get_logger().info('Unmapped: %i Unoccupied: %i Occupied: %i Total: %i' % (occ_counts[0][0], occ_counts[0][1], occ_counts[0][2], total_bins))
+        #self.get_logger().info('Unmapped: %i Unoccupied: %i Occupied: %i Total: %i' % (occ_counts[0][0], occ_counts[0][1], occ_counts[0][2], total_bins))
 
         # make msgdata go from 0 instead of -1, reshape into 2D
         oc2 = msgdata + 1
@@ -274,7 +274,7 @@ class AutoNav(Node):
             trans = self.tfBuffer.lookup_transform(
                 'map', 'base_link', rclpy.time.Time())
         except (LookupException, ConnectivityException, ExtrapolationException) as e:
-            self.get_logger().info('No transformation found')
+            #self.get_logger().info('No transformation found')
             return
         self.occdata = np.uint8(oc2.reshape(msg.info.height, msg.info.width))
         myoccdata = np.uint8(oc2.reshape(msg.info.height, msg.info.width))
@@ -325,7 +325,7 @@ class AutoNav(Node):
         msg.orientation = self.mapbase.transform.rotation
 
         self.map2base.publish(msg)
-        self.get_logger().info('Publishing: "%s"' % msg)
+        #self.get_logger().info('Publishing: "%s"' % msg)
             
     # function to rotate the TurtleBot
     def rotatebot(self, rot_angle):
@@ -394,8 +394,8 @@ class AutoNav(Node):
         self.laserFront = self.laser_range[354:359]
         self.laserFront = np.append(self.laserFront, self.laser_range[0:6])
         self.front_dist = np.nan_to_num(np.nanmean(self.laserFront), copy = False, nan = 100)
-        self.leftfront_dist = np.nan_to_num(np.nanmean(self.laser_range[43:48]), copy = False, nan = 100)
-        self.rightfront_dist = np.nan_to_num(np.nanmean(self.laser_range[313:318]), copy = False, nan = 100)
+        self.leftfront_dist = np.nan_to_num(np.nanmean(self.laser_range[40:51]), copy = False, nan = 100)
+        self.rightfront_dist = np.nan_to_num(np.nanmean(self.laser_range[310:321]), copy = False, nan = 100)
         self.leftback_dist = np.nan_to_num(np.nanmean(self.laser_range[132:138]), copy = False, nan = 100)
         self.back_dist = np.nan_to_num(np.nanmean(self.laser_range[175:186]), copy = False, nan = 100)
         global d, turning_speed_wf_fast, turningspeed_wf_slow, cornering_speed_constant
@@ -420,7 +420,7 @@ class AutoNav(Node):
                 msg.linear.x =  speedchange
                 msg.angular.z = turning_speed_wf_slow  # turn left to find wall
                 
-        elif self.front_dist < 0.20:
+        elif self.front_dist < 0.25:
             state_description = 'case Y - Reverse!!'
             self.change_state(5)
             msg.linear.x =  -0.7 * speedchange
@@ -430,12 +430,8 @@ class AutoNav(Node):
         elif self.leftfront_dist > d and self.front_dist < d and self.rightfront_dist > d:
             state_description = 'case 2 - front'
             self.change_state(1)
-            self.stopbot()
-            self.rotatebot(80)
-            '''
             msg.linear.x = cornering_speed_constant * speedchange
             msg.angular.z = turning_speed_wf_fast
-            '''
 
         elif (self.leftfront_dist < d and self.front_dist > d and self.rightfront_dist > d):
             if (self.leftfront_dist < snaking_radius):
@@ -470,7 +466,7 @@ class AutoNav(Node):
         elif self.leftfront_dist < d and self.front_dist < d and self.rightfront_dist < d:
             state_description = 'case 7  - lfront, front and rfront'
             self.change_state(1)
-            msg.linear.x = cornering_speed_constant * speedchange
+            msg.linear.x = cornering_speed_constant * 0
             msg.angular.z = -turning_speed_wf_fast
 
         elif self.leftfront_dist < d and self.front_dist > d and self.rightfront_dist < d:
@@ -566,7 +562,6 @@ class AutoNav(Node):
                         while (not isDoneShooting):
                             #print('Target detected, initiating firing sequence!')
                             rclpy.spin_once(self)
-                            time.sleep(5)
                         isTargetDetected = False
                 # allow the callback functions to run
                 rclpy.spin_once(self)
