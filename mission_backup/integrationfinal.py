@@ -288,7 +288,7 @@ class mission(Node):
             # Try again if no card is available.
             if nfc_reading is None:
                 continue
-        print('Mission - [2] - Arrived at loading bay')
+            print('Mission - [2] - Arrived at loading bay')
             loading_bay_found = True
             self.send_nfc_status()
 
