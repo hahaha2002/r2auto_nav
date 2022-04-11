@@ -369,7 +369,7 @@ class mission(Node):
         global message_sent, servo_pin, motor_pin
         self.rotate_angle = 65
         self.d = 0.8
-                print('Mission - [4] - Searching for "Hot target"...')
+        print('Mission - [4] - Searching for "Hot target"...')
 
         # find the target
         self.find_target() #stopped here
