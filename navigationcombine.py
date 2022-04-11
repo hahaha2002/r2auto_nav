@@ -12,10 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-os.system("gnome-terminal --command='ros2 launch turtlebot3_cartographer cartographer.launch.py'")
-# open up rslam everytime run
-
 import rclpy
 from rclpy.node import Node
 from nav_msgs.msg import Odometry
@@ -382,7 +378,12 @@ class AutoNav(Node):
             if type(state) == int:
                 print('Wall follower - [%s] - %s' % (state, state_dict_[state]))
             elif type(state) == str:
-                print('Targetting - [%s] - %s' % (state, state_dict_[state]))
+                if state_ == 'B' and state == 'C':
+                    pass
+                elif state_ == 'C' and state == 'B':
+                    pass
+                else:
+                    print('Targetting - [%s] - %s' % (state, state_dict_[state]))
         state_ = state
 
     #Main wall-follower logic code ; Left-wall following
@@ -538,8 +539,10 @@ class AutoNav(Node):
                 if self.laser_range.size != 0:
                     #Increases distance from wall if NFC still not detected after one round
                     if int(time.time()) == int(start_time):
+                        self.stopbot()
                         start_position = position
                         print('Starting point: ',start_position)
+                        time.sleep(1)
                     if position == start_position and (time.time()-start_time > 60):
                         d = d+0.05
                         start_time = time.time()

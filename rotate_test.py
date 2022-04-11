@@ -11,6 +11,10 @@ from tf2_ros.buffer import Buffer
 # Easy way to request and receive coordinate frame transform information
 from tf2_ros.transform_listener import TransformListener
 
+import os
+os.system("gnome-terminal --command='ros2 launch turtlebot3_cartographer cartographer.launch.py'")
+# open up rslam everytime run
+
 class Map2Base(Node):
 
     def __init__(self):
