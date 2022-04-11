@@ -306,6 +306,7 @@ class mission(Node):
                 isDoneLoading = True
                 print('Mission - [3] - Balls loaded, resuming mission')
                 GPIO.output(button_pin_out, 0)
+                time.sleep(3)
         self.send_nfc_status()
 
     #################################################################
