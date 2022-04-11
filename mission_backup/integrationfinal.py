@@ -109,7 +109,6 @@ class mission(Node):
             qos_profile_sensor_data)
         self.lidar_subscription  # prevent unused variable warning
 
-        '''
         ## Odom subscriber
         self.odom_subscription = self.create_subscription(
             Odometry,
@@ -118,15 +117,14 @@ class mission(Node):
             10)
         self.odom_subscription #prevent unused variable warning
         '''
-
         ## Position from map subscriber
         self.pos_subscription = self.create_subscription(Pose, '/map2base', self.pos_callback, 10)
         self.pos_subscription  # prevent unused variable warning
         # initialize variables
+        '''
         self.roll = 0.0
         self.pitch = 0.0
         self.yaw = 0.0
-
 
 
     ## Callback functions
@@ -165,12 +163,12 @@ class mission(Node):
         # self.get_logger().info('In odom_callback')
         orientation_quat =  msg.pose.pose.orientation
         self.roll, self.pitch, self.yaw = self.euler_from_quaternion(orientation_quat.x, orientation_quat.y, orientation_quat.z, orientation_quat.w)
-'''
+    '''
     def pos_callback(self, msg):
         global euler_from_quaternion, orientation_quat
         orientation_quat =  msg.orientation
         self.roll, self.pitch, self.yaw = self.euler_from_quaternion(orientation_quat.x, orientation_quat.y, orientation_quat.z, orientation_quat.w)
-'''
+    '''
 
     ################################################################
     ## Helper functions
