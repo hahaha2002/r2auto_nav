@@ -223,7 +223,7 @@ class mission(Node):
         # get current yaw angle
         current_yaw = self.yaw
         # log the info
-        self.get_logger().info('Current: %f' % math.degrees(current_yaw))
+        #self.get_logger().info('Current: %f' % math.degrees(current_yaw))
         # we are going to use complex numbers to avoid problems when the angles go from
         # 360 to 0, or from -180 to 180
         c_yaw = complex(math.cos(current_yaw),math.sin(current_yaw))
@@ -231,7 +231,7 @@ class mission(Node):
         target_yaw = current_yaw + math.radians(rot_angle)
         # convert to complex notation
         c_target_yaw = complex(math.cos(target_yaw),math.sin(target_yaw))
-        self.get_logger().info('Desired: %f' % math.degrees(cmath.phase(c_target_yaw)))
+        #self.get_logger().info('Desired: %f' % math.degrees(cmath.phase(c_target_yaw)))
         # divide the two complex numbers to get the change in direction
         c_change = c_target_yaw / c_yaw
         # get the sign of the imaginary component to figure out which way we have to turn
@@ -254,14 +254,14 @@ class mission(Node):
             current_yaw = self.yaw
             # convert the current yaw to complex form
             c_yaw = complex(math.cos(current_yaw),math.sin(current_yaw))
-            self.get_logger().info('Current Yaw: %f' % math.degrees(current_yaw))
+            #self.get_logger().info('Current Yaw: %f' % math.degrees(current_yaw))
             # get difference in angle between current and target
             c_change = c_target_yaw / c_yaw
             # get the sign to see if we can stop
             c_dir_diff = np.sign(c_change.imag)
             # self.get_logger().info('c_change_dir: %f c_dir_diff: %f' % (c_change_dir, c_dir_diff))
 
-        self.get_logger().info('End Yaw: %f' % math.degrees(current_yaw))
+        #self.get_logger().info('End Yaw: %f' % math.degrees(current_yaw))
         # set the rotation speed to 0
         twist.angular.z = 0.0
         # stop the rotation
@@ -280,7 +280,7 @@ class mission(Node):
     def nfc_search(self):
         rclpy.spin_once(self)
         loading_bay_found = False
-        print('Searching for loading bay...')
+        print('Mission - [1] - Searching for loading bay')
         while not loading_bay_found:
             # Check if a card is available to read
             nfc_reading = pn532.read_passive_target(timeout=0.5)
@@ -288,7 +288,7 @@ class mission(Node):
             # Try again if no card is available.
             if nfc_reading is None:
                 continue
-            print('Arrived at loading bay!')
+        print('Mission - [2] - Arrived at loading bay')
             loading_bay_found = True
             self.send_nfc_status()
 
@@ -300,12 +300,11 @@ class mission(Node):
         self.nfc_search()
 
         # Loading balls
-        print("loading balls")
         GPIO.output(button_pin_out, 1)
         while not isDoneLoading:
             if GPIO.input(button_pin_in) == GPIO.HIGH:
                 isDoneLoading = True
-                print("Button is pushed, done loading")
+                print('Mission - [3] - Balls loaded, resuming mission')
                 GPIO.output(button_pin_out, 0)
         self.send_nfc_status()
 
@@ -322,11 +321,12 @@ class mission(Node):
                 for temp in row:
                     if temp > detecting_threshold:
                         target_found = True
+        
 
         # Target found, communicate with wallfollower to stop working
         target_status = target_detected_msg
         self.send_firing_status()
-        self.get_logger().info('Publishing: "%s"' % target_status)
+        #self.get_logger().info('Publishing: "%s"' % target_status)
         self.stopbot()
         time.sleep(1)
 
@@ -362,14 +362,14 @@ class mission(Node):
                 self.vel_publisher.publish(twist)
             else:
                 centered = True
-        print('centered')
+                print('Mission - [5] - Target Centered')
         self.stopbot()
 
     def targetting(self):
         global message_sent, servo_pin, motor_pin
         self.rotate_angle = 65
         self.d = 0.8
-        print('Scanning for hot target...')
+                print('Mission - [4] - Searching for "Hot target"...')
 
         # find the target
         self.find_target() #stopped here
@@ -379,7 +379,7 @@ class mission(Node):
         time.sleep(1)
 
         # rotate to forward facing the target
-        print('rotating')
+        print('Mission - [6] - Rotating')
         self.rotate(-1) # problems with first time rotating on our robot
         self.rotate(- self.rotate_angle)
         time.sleep(1)
@@ -388,53 +388,55 @@ class mission(Node):
         #print(self.distance)
         if self.distance > self.d:
             while self.distance > self.d:
-                print(self.distance)
+                #print(self.distance)
                 rclpy.spin_once(self)
                 self.move_forward()
             self.stopbot()
 
             # Recheck center
-            print('rotating back')
+            print('Mission - [6] - Rotating')
             rclpy.spin_once(self)
             self.rotate(1)
             self.rotate(self.rotate_angle)
             time.sleep(1)
             rclpy.spin_once(self)
-            print('centering again')
+            print('Mission - [7] - Re-centering')
             self.centre_target()
-            print('rotate again')
+            print('Mission - [6] - Rotating')
             rclpy.spin_once(self)
             self.rotate(-1)
             self.rotate(-self.rotate_angle)
-        print("Ready to fire!!!")
+        print('Mission - [8] - Firing')
 
     def fire(self):
         global target_status, finish_shooting_msg, motor_pin
 
         # run  motor
+        print('Mission - [9a] - Spool motors')
         GPIO.output(motor_pin, 1)
         time.sleep(2)
 
         # open servo gate
-        print("Open servo gate")
+        print('Mission - [10a] - Opening servo gate')
         self.move_servo(90)
         time.sleep(5)
-        print("Close servo")
+        print('Mission - [10b] - Closing servo gate')
         self.move_servo(0)
 
         # Send message that the target has finished shooting
-        self.get_logger().info("Finished shooting")
+        #self.get_logger().info("Finished shooting")
         target_status = finish_shooting_msg
         self.send_firing_status()
-        self.get_logger().info('Publishing: "%s"' % target_status)
+        #self.get_logger().info('Publishing: "%s"' % target_status)
 
         # Stop the DC Motor
         GPIO.output(motor_pin, 0)
-        self.get_logger().info("Stopped the DC Motor")
+        print('Mission - [9b] - Stop motors')        
+        #self.get_logger().info("Stopped the DC Motor")
 
         # Cleanup all GPIO
         GPIO.cleanup()
-        self.get_logger().info("Cleaned up GPIO")
+        #self.get_logger().info("Cleaned up GPIO")
 
 
 
