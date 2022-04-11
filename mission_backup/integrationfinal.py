@@ -159,19 +159,18 @@ class mission(Node):
         except ValueError:
             self.distance = 9999
 
-    '''
+
     def odom_callback(self, msg):
         # self.get_logger().info(msg)
         # self.get_logger().info('In odom_callback')
         orientation_quat =  msg.pose.pose.orientation
         self.roll, self.pitch, self.yaw = self.euler_from_quaternion(orientation_quat.x, orientation_quat.y, orientation_quat.z, orientation_quat.w)
-    '''
-
+'''
     def pos_callback(self, msg):
         global euler_from_quaternion, orientation_quat
         orientation_quat =  msg.orientation
         self.roll, self.pitch, self.yaw = self.euler_from_quaternion(orientation_quat.x, orientation_quat.y, orientation_quat.z, orientation_quat.w)
-
+'''
 
     ################################################################
     ## Helper functions
