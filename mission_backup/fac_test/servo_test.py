@@ -1,6 +1,6 @@
 import pigpio
 
-servo_pin = 12
+servo_pin = 19
 servo = pigpio.pi()
 servo.set_mode(servo_pin, pigpio.OUTPUT)
 servo.set_PWM_frequency(servo_pin,50)

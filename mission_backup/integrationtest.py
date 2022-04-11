@@ -25,7 +25,7 @@ from sensor_msgs.msg import LaserScan
 from nav_msgs.msg import Odometry
 import math
 import cmath
-import rotate_func as rot
+from rotate_func import mover as rot
 
 ## constants
 isDoneLoading = False

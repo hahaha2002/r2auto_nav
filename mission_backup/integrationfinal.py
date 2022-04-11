@@ -223,7 +223,7 @@ class mission(Node):
         # get current yaw angle
         current_yaw = self.yaw
         # log the info
-        #self.get_logger().info('Current: %f' % math.degrees(current_yaw))
+        self.get_logger().info('Current: %f' % math.degrees(current_yaw))
         # we are going to use complex numbers to avoid problems when the angles go from
         # 360 to 0, or from -180 to 180
         c_yaw = complex(math.cos(current_yaw),math.sin(current_yaw))
@@ -231,7 +231,7 @@ class mission(Node):
         target_yaw = current_yaw + math.radians(rot_angle)
         # convert to complex notation
         c_target_yaw = complex(math.cos(target_yaw),math.sin(target_yaw))
-        #self.get_logger().info('Desired: %f' % math.degrees(cmath.phase(c_target_yaw)))
+        self.get_logger().info('Desired: %f' % math.degrees(cmath.phase(c_target_yaw)))
         # divide the two complex numbers to get the change in direction
         c_change = c_target_yaw / c_yaw
         # get the sign of the imaginary component to figure out which way we have to turn
@@ -254,12 +254,12 @@ class mission(Node):
             current_yaw = self.yaw
             # convert the current yaw to complex form
             c_yaw = complex(math.cos(current_yaw),math.sin(current_yaw))
-            #self.get_logger().info('Current Yaw: %f' % math.degrees(current_yaw))
+            self.get_logger().info('Current Yaw: %f' % math.degrees(current_yaw))
             # get difference in angle between current and target
             c_change = c_target_yaw / c_yaw
             # get the sign to see if we can stop
             c_dir_diff = np.sign(c_change.imag)
-            # self.get_logger().info('c_change_dir: %f c_dir_diff: %f' % (c_change_dir, c_dir_diff))
+            self.get_logger().info('c_change_dir: %f c_dir_diff: %f' % (c_change_dir, c_dir_diff))
 
         #self.get_logger().info('End Yaw: %f' % math.degrees(current_yaw))
         # set the rotation speed to 0
@@ -368,7 +368,7 @@ class mission(Node):
 
     def targetting(self):
         global message_sent, servo_pin, motor_pin
-        self.rotate_angle = 65
+        self.rotate_angle = 90
         self.d = 0.8
         print('Mission - [4] - Searching for "Hot target"...')
 
