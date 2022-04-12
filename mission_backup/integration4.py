@@ -41,7 +41,7 @@ NFC_found_msg = 'LOADING ZONE'
 load_finish_msg = 'FINISH LOADING'
 target_status = 'Not detected'
 target_detected_msg = 'Detected'
-finish_shooting_msg = "FINISH SHOOTING"
+finish_shooting_msg = "FINISHED SHOOTING"
 
 ## INITIALISE IR SENSOR
 try:
@@ -216,13 +216,14 @@ class mission(Node):
         rclpy.spin_once(self)
         rclpy.spin_once(self)
         rclpy.spin_once(self)
-
+        print('rotating ', rot_angle)
         # self.get_logger().info('In rotatebot')
         # create Twist object
         twist = Twist()
 
         # get current yaw angle
         current_yaw = self.yaw
+        initial_yaw = current_yaw
         # log the info
         self.get_logger().info('Current: %f' % math.degrees(current_yaw))
         # we are going to use complex numbers to avoid problems when the angles go from
@@ -249,10 +250,30 @@ class mission(Node):
         # self.get_logger().info('c_change_dir: %f c_dir_diff: %f' % (c_change_dir, c_dir_diff))
         # if the rotation direction was 1.0, then we will want to stop when the c_dir_diff
         # becomes -1.0, and vice versa
+        count = 0
         while(c_change_dir * c_dir_diff > 0):
             # allow the callback functions to run
             rclpy.spin_once(self)
             current_yaw = self.yaw
+            #check if new current yaw differ by initial yaw by more than around 1 degree
+            # (in radians)
+            if count == 0 and abs(current_yaw - initial_yaw) > 0.03:
+                print('here')
+                # we are going to use complex numbers to avoid problems when the angles go from
+                # 360 to 0, or from -180 to 180
+                c_yaw = complex(math.cos(current_yaw),math.sin(current_yaw))
+                # calculate desired yaw
+                target_yaw = current_yaw + math.radians(rot_angle)
+                # convert to complex notation
+                c_target_yaw = complex(math.cos(target_yaw),math.sin(target_yaw))
+                self.get_logger().info('Desired: %f' % math.degrees(cmath.phase(c_target_yaw)))
+                # divide the two complex numbers to get the change in direction
+                c_change = c_target_yaw / c_yaw
+                # get the sign of the imaginary component to figure out which way we have to turn
+                c_change_dir = np.sign(c_change.imag)
+            if count == 0:
+                count += 1
+                print(current_yaw - initial_yaw)
             # convert the current yaw to complex form
             c_yaw = complex(math.cos(current_yaw),math.sin(current_yaw))
             self.get_logger().info('Current Yaw: %f' % math.degrees(current_yaw))
