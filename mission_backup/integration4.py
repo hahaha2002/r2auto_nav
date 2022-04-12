@@ -11,7 +11,7 @@ import RPi.GPIO as GPIO
 ## import NFC requirements
 from pn532 import *
 
-## import servo requirements 
+## import servo requirements
 import pigpio
 
 ## import ros requirements
@@ -35,6 +35,9 @@ min_temp_threshold = 30.0
 max_temp_threshold = 35.0
 detecting_threshold = 32.0
 firing_threshold = 35.0
+
+# offset angle for ir (0:0 / 45:31 / 90:69)
+ir_offset = 31
 
 ## messages sent
 NFC_found_msg = 'LOADING ZONE'
@@ -149,8 +152,8 @@ class mission(Node):
 
     def lidar_callback(self, msg):
         laser_range = np.array(msg.ranges)
-        laser_front = laser_range[0:5]
-        np.append(laser_front, laser_range[-1:-5:-1])
+        laser_front = laser_range[0:3]
+        np.append(laser_front, laser_range[-1:-3:-1])
         laser_front[laser_front==0] = np.nan
         try:
             self.distance = np.nanmean(laser_front)
@@ -389,8 +392,8 @@ class mission(Node):
         self.stopbot()
 
     def targetting(self):
-        global message_sent, servo_pin, motor_pin
-        self.rotate_angle = 31
+        global message_sent, servo_pin, motor_pin, ir_offset
+        self.rotate_angle = ir_offset
         self.d = 0.8
         print('Mission - [4] - Searching for "Hot target"...')
 
@@ -426,6 +429,7 @@ class mission(Node):
             print('Mission - [7] - Re-centering')
             self.centre_target()
             print('Mission - [6] - Rotating')
+            time.sleep(1)
             rclpy.spin_once(self)
             self.rotate(-1)
             self.rotate(-self.rotate_angle)
