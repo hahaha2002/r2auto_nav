@@ -327,10 +327,13 @@ class mission(Node):
         #self.get_logger().info('Publishing: "%s"' % target_status)
         self.stopbot()
         time.sleep(1)
+        # centre the target
+        self.centre_target()
+        time.sleep(1)
 
 
     def centre_target(self):
-        global target_found
+        global target_found, target_status
         centered = False
 
         while not centered:
@@ -347,6 +350,9 @@ class mission(Node):
                         max_value = current_value
             if max_value < detecting_threshold:
                 target_found = False
+                target_status = 'lost'
+                self.send_firing_status()
+                self.find_target()
                 break
             # centre max value between column 3 and 4
             if max_column < 3:
@@ -373,11 +379,7 @@ class mission(Node):
         print('Mission - [4] - Searching for "Hot target"...')
 
         # find the target
-        self.find_target() #stopped here
-
-        # centre the target
-        self.centre_target()
-        time.sleep(1)
+        self.find_target() #stopped her
 
         # rotate to forward facing the target
         print('Mission - [6] - Rotating')
