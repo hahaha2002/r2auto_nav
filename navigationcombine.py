@@ -30,6 +30,7 @@ import time
 import matplotlib.pyplot as plt
 from PIL import Image
 import scipy.stats
+import os
 
 # Stores known frames and offers frame graph requests
 from tf2_ros.buffer import Buffer
@@ -37,9 +38,13 @@ from tf2_ros.buffer import Buffer
 # Easy way to request and receive coordinate frame transform information
 from tf2_ros.transform_listener import TransformListener
 
+# open up rslam everytime run
+os.system("gnome-terminal --command='ros2 launch turtlebot3_cartographer cartographer.launch.py'")
+
 
 # Adjustable variables to calibrate wall follower
 d = 0.35 #Distance from wall
+reverse_d = 0.20 #Distance threshold to reverse
 speedchange = 0.17 #Linear speed
 back_angles = range(150, 210 + 1, 1)
 turning_speed_wf_fast = 0.75  #Fast rotate speed
@@ -397,7 +402,7 @@ class AutoNav(Node):
         self.rightfront_dist = np.nan_to_num(np.nanmean(self.laser_range[310:321]), copy = False, nan = 100)
         self.leftback_dist = np.nan_to_num(np.nanmean(self.laser_range[132:138]), copy = False, nan = 100)
         self.back_dist = np.nan_to_num(np.nanmean(self.laser_range[175:186]), copy = False, nan = 100)
-        global d, turning_speed_wf_fast, turningspeed_wf_slow, cornering_speed_constant
+        global d, turning_speed_wf_fast, turningspeed_wf_slow, cornering_speed_constant, reverse_d
         # Set up twist message as msg
         msg = Twist()
         msg.linear.x = 0.0
@@ -408,10 +413,10 @@ class AutoNav(Node):
         msg.angular.z = 0.0
 
         if self.leftfront_dist > d and self.front_dist > d and self.rightfront_dist > d:
-            if self.leftback_dist > 1.5 * d:
+            if self.leftback_dist > 1.6 * d:
                 state_description = 'case X - U-turn'
                 self.change_state(3)
-                msg.linear.x =  0.5 * speedchange
+                msg.linear.x =  0.6 * speedchange
                 msg.angular.z = 1.2 * turning_speed_wf_slow  # turn left to find wall
             else:
                 state_description = 'case 1 - nothing'
@@ -419,7 +424,7 @@ class AutoNav(Node):
                 msg.linear.x =  speedchange
                 msg.angular.z = turning_speed_wf_slow  # turn left to find wall
                 
-        elif self.front_dist < 0.25:
+        elif self.front_dist < reverse_d:
             state_description = 'case Y - Reverse!!'
             self.change_state(5)
             msg.linear.x =  -0.7 * speedchange
@@ -460,7 +465,7 @@ class AutoNav(Node):
         elif self.leftfront_dist < d and self.front_dist < d and self.rightfront_dist > d:
             state_description = 'case 6  - lfront and front'
             self.change_state(1)
-            msg.angular.z = -turning_speed_wf_fast
+            msg.angular.z = -turning_speed_wf_fast * 1.4
 
         elif self.leftfront_dist < d and self.front_dist < d and self.rightfront_dist < d:
             state_description = 'case 7  - lfront, front and rfront'
@@ -575,7 +580,7 @@ class AutoNav(Node):
         finally:
             # stop moving
             self.stopbot()
-            #cv2.imwrite('mazemapfinally.png', myoccdata)
+            cv2.imwrite('mazemapfinally.png', myoccdata)
   
     ##########################################################################
     ##########################################################################
