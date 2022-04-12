@@ -39,13 +39,13 @@ from tf2_ros.transform_listener import TransformListener
 
 
 # Adjustable variables to calibrate wall follower
-d = 0.45 #Distance from wall
-speedchange = 0.15 #Linear speed
+d = 0.35 #Distance from wall
+speedchange = 0.17 #Linear speed
 back_angles = range(150, 210 + 1, 1)
-turning_speed_wf_fast = 0.70  #Fast rotate speed
+turning_speed_wf_fast = 0.75  #Fast rotate speed
 turning_speed_wf_slow = 0.4  #Slow rotate speed
 snaking_radius = d - 0.07  #Amount of variation accepted from wall
-cornering_speed_constant = 0.9 #percentage of speed change wwhen cornering
+cornering_speed_constant = 0.5 #percentage of speed change wwhen cornering
 
 #variables for map file
 scanfile = 'lidar.txt'
@@ -411,7 +411,7 @@ class AutoNav(Node):
             if self.leftback_dist > 1.5 * d:
                 state_description = 'case X - U-turn'
                 self.change_state(3)
-                msg.linear.x =  0.6 * speedchange
+                msg.linear.x =  0.5 * speedchange
                 msg.angular.z = 1.2 * turning_speed_wf_slow  # turn left to find wall
             else:
                 state_description = 'case 1 - nothing'
@@ -558,12 +558,13 @@ class AutoNav(Node):
                             self.stopbot()
                             rclpy.spin_once(self)
                     # Halt wall following and allow targetting code to engage the target
-                    if isTargetDetected and isMapDone:
+                    if isTargetDetected:
                         self.stopbot()
                         while (not isDoneShooting):
                             #print('Target detected, initiating firing sequence!')
                             rclpy.spin_once(self)
                         isTargetDetected = False
+                        self.initialmove()
                 # allow the callback functions to run
                 rclpy.spin_once(self)
               

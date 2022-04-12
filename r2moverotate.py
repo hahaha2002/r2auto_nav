@@ -23,8 +23,8 @@ import cmath
 import numpy as np
 
 # constants
-rotatechange = 0.1
-speedchange = 0.05
+rotatechange = 1.0
+speedchange = 0.25
 
 
 # code from https://automaticaddison.com/how-to-convert-a-quaternion-into-euler-angles-in-python/
@@ -90,6 +90,7 @@ class Mover(Node):
 
     # function to rotate the TurtleBot
     def rotatebot(self, rot_angle):
+        rclpy.spin_once(self)
         # self.get_logger().info('In rotatebot')
         # create Twist object
         twist = Twist()
