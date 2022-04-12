@@ -3,11 +3,11 @@ from rclpy.node import Node
 from rclpy.qos import qos_profile_sensor_data
 from geometry_msgs.msg import Pose
 import numpy as np
-from tf2_ros import TransformException 
- 
+from tf2_ros import TransformException
+
 # Stores known frames and offers frame graph requests
 from tf2_ros.buffer import Buffer
- 
+
 # Easy way to request and receive coordinate frame transform information
 from tf2_ros.transform_listener import TransformListener
 
@@ -22,7 +22,7 @@ class Map2Base(Node):
         self.declare_parameter('target_frame', 'base_footprint')
         self.target_frame = self.get_parameter(
         'target_frame').get_parameter_value().string_value
-    
+
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer,self, spin_thread=True)
         self.mapbase = None
@@ -48,10 +48,9 @@ class Map2Base(Node):
             self.get_logger().info(
                 f'Could not transform {to_frame_rel} to {from_frame_rel}: {ex}')
             return
-        msg.position.x = self.mapbase.transform.translation.x 
+        msg.position.x = self.mapbase.transform.translation.x
         msg.position.y = self.mapbase.transform.translation.y
         msg.orientation = self.mapbase.transform.rotation
-        
         self.map2base.publish(msg)
         self.get_logger().info('Publishing: "%s"' % msg)
 
