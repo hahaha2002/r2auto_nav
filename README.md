@@ -3,7 +3,7 @@ ROS2 code for Tánkyu 2310i <br/>
 EG2310 - Fundamentals of Systems Design, AY 21/22, <br/>
 Innoovation and Design Programme, National University of Singapore (NUS). <br/>
 
-
+---------------------------------WORK IN PROGRESS---------------------------------
 ## Description
 In this repository, we use a Robotis Co. Turtlebot3 with ROS2 foxy and Python3 to explore a closed, connected maze with left-wall following algorithm.
 Our robot, Tánkyu 2310i, is augmented with LIDAR, NFC-detection, IR-detection and a flywheel firing system to accomplish its set objectives of autonomous navigation, NFC-detection, and firing a ping-pong ball at a target with high IR-signature.
@@ -77,7 +77,7 @@ sudo install pigpio
 sudo pigpiod
 ```
 ### Running Instructions
-1. Ssh into the RPi, `ssh ubuntu@<IP Address of RPi>`
+1. Ssh into the RPi, `ssh ubuntu@<RPi IP Address>`
 2. On the RPi, initiate the bring up `ros2 launch turtlebot3_bringup robot.launch.py'
 3. On RPi, in the RPi_files directory, Start the targeting code `python3 integration4.py`.
 4. On Ubuntu, in the r2auto_nav directory, Start the navigation code `python3 navigationcombine2.py`.
