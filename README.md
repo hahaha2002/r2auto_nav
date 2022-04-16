@@ -49,7 +49,8 @@ Tested on Ubuntu 20.04 - ROS2 Foxy
 1. Install Ubuntu 20.04 and ROS 2 Foxy using the instructions in Section 3.1 of the following webpage (Ensure you click on the "Foxy" tab): <br/>
 https://emanual.robotis.com/docs/en/platform/turtlebot3/quick-start/#pc-setup
 2. Using Ubuntu, burn the ROS2 Foxy image to the SD card of the R-Pi’s using the instructions in Section 3.2.3
-3. Using Ubuntu, complete the OpenCR setup in Section 3.3
+3. Using Ubuntu, complete the OpenCR setup in Section 3.3 
+4. For MacBook users, fret not as I have made it through this mod with my M1 Macbook Air and have created a [video guide](https://youtu.be/QQ5RfmdMzf4) to assist you in setting up ubuntu that allows for full functionality with all required applications.
 ### Set Up
 1. Clone this repository to Ubuntu home directory: <br/>
 ``` 
