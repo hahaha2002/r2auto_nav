@@ -46,34 +46,40 @@ Under 'Adjustable variables to calibrate targeting' you may experiment with diff
 ## Operating Instructions
 Tested on Ubuntu 20.04 - ROS2 Foxy
 ### Installation
-1. Install Ubuntu 20.04 and ROS 2 Foxy using the instructions in Section 3.1 of the following webpage (Ensure you click on the "Foxy" tab): <br/>
-https://emanual.robotis.com/docs/en/platform/turtlebot3/quick-start/#pc-setup
-2. Using Ubuntu, burn the ROS2 Foxy image to the SD card of the R-Pi’s using the instructions in Section 3.2.3
-3. Using Ubuntu, complete the OpenCR setup in Section 3.3 
-4. For MacBook users, fret not as I have made it through this mod with my M1 Macbook Air and have created a [video guide](https://youtu.be/QQ5RfmdMzf4) to assist you in setting up ubuntu that allows for full functionality with all required applications.
+1. Install Ubuntu 20.04 and ROS 2 Foxy using the instructions in Section 3.1 of the [Robotis e-manual](https://emanual.robotis.com/docs/en/platform/turtlebot3/quick-start/#pc-setup) (Ensure you click on the "Foxy" tab).
+For MacBook users, fret not as I have made it through this module with my M1 Macbook Air and have created a [video guide](https://youtu.be/QQ5RfmdMzf4) to assist you in setting up ubuntu that allows for full functionality with all required applications.
+3. Using Ubuntu, complete the RPi in Section 3.2
+4. Using Ubuntu, complete the OpenCR setup in Section 3.3 
+
 ### Set Up
-1. Clone this repository to Ubuntu home directory: <br/>
+1. Clone this repository onto your Ubuntu ros2 directory: <br/>
 ``` 
+cd colcon_ws/src/auto_nav
 git clone https://github.com/hahaha2002/r2auto_nav.git 
-```
-2. Build the package on Ubuntu: <br/>
-``` 
-cd <path to r2_auto_nav directory>/colcon_ws
+cd colcon_ws
 colcon build
 ```
-3. Copy the RPi_files folder to the RPi: <br/>
+2. Copy the RPi_files folder to the RPi: <br/>
 ``` 
 scp -r <path to r2auto_nav directory>/turtlebot3_ws/src/RPi_files ubuntu@<RPi IP address>:~/turtlebot3/src 
 ```
-4. Build the package on RPi: <br/>
+3. Build the package on RPi: <br/>
 ``` 
 cd turtlebot3_ws 
 colcon build 
 ```
+4. Install the following packages:
+```
+sudo install pigpio
+```
+6. Append these to the launch file for ease of use:
+```
+sudo pigpiod
+```
 ### Running Instructions
-1. Ssh into the RPi, `ssh ubuntu@<IP address of RPi>`
-2. On the RPi, Start `rosbu`
-3. On Ubuntu, in the r2auto_nav directory, Start the targeting code `python3 integration4.py`.
+1. Ssh into the RPi, `ssh ubuntu@<IP Address of RPi>`
+2. On the RPi, initiate the bring up `ros2 launch turtlebot3_bringup robot.launch.py'
+3. On RPi, in the RPi_files directory, Start the targeting code `python3 integration4.py`.
 4. On Ubuntu, in the r2auto_nav directory, Start the navigation code `python3 navigationcombine2.py`.
 
 
