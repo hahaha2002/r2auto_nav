@@ -45,7 +45,7 @@ Under 'Adjustable variables to calibrate targeting' you may experiment with diff
 Tested on Ubuntu 20.04 - ROS2 Foxy
 ### Installation
 1. Install Ubuntu 20.04 and ROS 2 Foxy using the instructions in Section 3.1 of the [Robotis e-manual](https://emanual.robotis.com/docs/en/platform/turtlebot3/quick-start/#pc-setup) (Ensure you click on the "Foxy" tab).
-For MacBook users, fret not as I have made it through this module with my M1 Macbook Air and have created a [video guide](https://youtu.be/QQ5RfmdMzf4) to assist you in setting up ubuntu that allows for full functionality with all required applications.
+For MacBook users, fret not as I have made it through this module with my M1 Macbook Air and have created a [video guide](https://youtu.be/suntoEurFio) to assist you in setting up ubuntu that allows for full functionality with all required applications.
 3. Using Ubuntu, complete the RPi in Section 3.2
 4. Using Ubuntu, complete the OpenCR setup in Section 3.3 
 
