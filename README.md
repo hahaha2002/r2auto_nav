@@ -5,12 +5,10 @@ Innoovation and Design Programme, National University of Singapore (NUS). <br/>
 
 ---------------------------------WORK IN PROGRESS---------------------------------
 ## Description
-In this repository, we use a Robotis Co. Turtlebot3 with ROS2 foxy and Python3 to explore a closed, connected maze with left-wall following algorithm.
-Our robot, Tánkyu 2310i, is augmented with LIDAR, NFC-detection, IR-detection and a flywheel firing system to accomplish its set objectives of autonomous navigation, NFC-detection, and firing a ping-pong ball at a target with high IR-signature.
+The Tánkyu 2310i, developed by NUS IDP students from EG2310, is a modified Robotis Co. Turtlebot 3. It is augmented with LIDAR, NFC-detection, IR-detection and a flywheel firing system to accomplish its set objectives - Autonomous navigation within a closed and connected maze, locating a loading bay demarketed by NFC tags, and firing a ping-pong ball at a target with high IR-signature.
 
+In this repository, we are using Ubuntu 20.04.4, ROS2 Foxy and Python3.6 to explore a closed and connected maze using a left-wall following algorithm.
 You may check out our [Documentation](https://www.youtube.com/watch?v=dQw4w9WgXcQ&ab_channel=RickAstley) file for more details on our robot and it's mission.
-
-
 
 ## File Organisation
 - navigationcombine.py file contains the wall-following logic and bug 0 algorithm. This code also communicates with the targeting file to allow the Tánkyu 2310i to engage the target when the conditions are met.
@@ -61,21 +59,19 @@ colcon build
 ```
 2. Copy the RPi_files folder to the RPi: <br/>
 ``` 
-scp -r <path to r2auto_nav directory>/turtlebot3_ws/src/RPi_files ubuntu@<RPi IP address>:~/turtlebot3/src 
+scp -r <path to r2auto_nav directory>/RPi_files ubuntu@<RPi IP address>:~/turtlebot3/src 
 ```
 3. Build the package on RPi: <br/>
 ``` 
 cd turtlebot3_ws 
 colcon build 
 ```
-4. Install the following packages:
+4. Install the pigpio package on RPi and automate the daemon on boot:
 ```
-sudo install pigpio
+sudo apt install pigpio
+sudo systemctl enable pigpiod
 ```
-6. Append these to the launch file for ease of use:
-```
-sudo pigpiod
-```
+
 ### Running Instructions
 1. Ssh into the RPi, `ssh ubuntu@<RPi IP Address>`
 2. On the RPi, initiate the bring up `ros2 launch turtlebot3_bringup robot.launch.py'
