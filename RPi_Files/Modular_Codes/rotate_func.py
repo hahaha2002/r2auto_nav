@@ -60,7 +60,8 @@ class Mover(Node):
         print('a', self.yaw)
     
     '''
-    def rotate(self):
+    ## Rotate funcion 1
+    def rotatebot(self):
         global orientation_quat
         angle = 90
         self.roll1, self.pitch1, self.yaw1 = euler_from_quaternion(orientation_quat.x, orientation_quat.y, orientation_quat.z, orientation_quat.w + 0.707)
@@ -80,7 +81,7 @@ class Mover(Node):
     '''
     
     
-    # function to rotate the TurtleBot
+    ## Rotate function 2
     def rotatebot(self, rot_angle):
         # self.get_logger().info('In rotatebot')
         # create Twist object

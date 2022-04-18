@@ -43,12 +43,13 @@ os.system("gnome-terminal --command='ros2 launch turtlebot3_cartographer cartogr
 
 
 # Adjustable variables to calibrate wall follower
-d = 0.35 #Distance from wall
+d = 0.45 #Distance from wall
+fd = d + 0.1
 reverse_d = 0.20 #Distance threshold to reverse
-speedchange = 0.17 #Linear speed
+speedchange = 0.2 #Linear speed
 back_angles = range(150, 210 + 1, 1)
-turning_speed_wf_fast = 0.75  #Fast rotate speed
-turning_speed_wf_slow = 0.4  #Slow rotate speed
+turning_speed_wf_fast = 0.8  #Fast rotate speed
+turning_speed_wf_slow = 0.45  #Slow rotate speed
 snaking_radius = d - 0.07  #Amount of variation accepted from wall
 cornering_speed_constant = 0.5 #percentage of speed change wwhen cornering
 
@@ -402,7 +403,7 @@ class AutoNav(Node):
         self.rightfront_dist = np.nan_to_num(np.nanmean(self.laser_range[310:321]), copy = False, nan = 100)
         self.leftback_dist = np.nan_to_num(np.nanmean(self.laser_range[132:138]), copy = False, nan = 100)
         self.back_dist = np.nan_to_num(np.nanmean(self.laser_range[175:186]), copy = False, nan = 100)
-        global d, turning_speed_wf_fast, turningspeed_wf_slow, cornering_speed_constant, reverse_d
+        global d, turning_speed_wf_fast, turningspeed_wf_slow, cornering_speed_constant, reverse_d, fd
         # Set up twist message as msg
         msg = Twist()
         msg.linear.x = 0.0
@@ -412,7 +413,7 @@ class AutoNav(Node):
         msg.angular.y = 0.0
         msg.angular.z = 0.0
 
-        if self.leftfront_dist > d and self.front_dist > d and self.rightfront_dist > d:
+        if self.leftfront_dist > d and self.front_dist > fd and self.rightfront_dist > d:
             if self.leftback_dist > 1.6 * d:
                 state_description = 'case X - U-turn'
                 self.change_state(3)
@@ -426,18 +427,23 @@ class AutoNav(Node):
                 
         elif self.front_dist < reverse_d:
             state_description = 'case Y - Reverse!!'
-            self.change_state(5)
-            msg.linear.x =  -0.7 * speedchange
-            msg.angular.z = 0.0
+            if self.back_dist < reverse_d:
+                self.change_state(5)
+                msg.linear.x = 0.0
+                msg.angular.z = - turning_speed_wf_fast
+            else:
+                self.change_state(5)
+                msg.linear.x =  -0.7 * speedchange
+                msg.angular.z = 0.0
             
                 
-        elif self.leftfront_dist > d and self.front_dist < d and self.rightfront_dist > d:
+        elif self.leftfront_dist > d and self.front_dist < fd and self.rightfront_dist > d:
             state_description = 'case 2 - front'
             self.change_state(1)
             msg.linear.x = cornering_speed_constant * speedchange
             msg.angular.z = turning_speed_wf_fast
 
-        elif (self.leftfront_dist < d and self.front_dist > d and self.rightfront_dist > d):
+        elif (self.leftfront_dist < d and self.front_dist > fd and self.rightfront_dist > d):
             if (self.leftfront_dist < snaking_radius):
                 # Getting too close to the wall
                 state_description = 'case 3a - too close to wall'
@@ -450,34 +456,38 @@ class AutoNav(Node):
                 self.change_state(2)
                 msg.linear.x = speedchange
 
-        elif self.leftfront_dist > d and self.front_dist > d and self.rightfront_dist < d:
+        elif self.leftfront_dist > d and self.front_dist > fd and self.rightfront_dist < d:
             state_description = 'case 4  - rfront'
             self.change_state(0)
             msg.linear.x = cornering_speed_constant * speedchange
             msg.angular.z = turning_speed_wf_slow  # turn left to find wall
 
-        elif self.leftfront_dist > d and self.front_dist < d and self.rightfront_dist < d:
+        elif self.leftfront_dist > d and self.front_dist < fd and self.rightfront_dist < d:
             state_description = 'case 5  - front and rfront'
             self.change_state(1)
             msg.linear.x = cornering_speed_constant * speedchange
             msg.angular.z = -turning_speed_wf_fast
 
-        elif self.leftfront_dist < d and self.front_dist < d and self.rightfront_dist > d:
+        elif self.leftfront_dist < d and self.front_dist < fd and self.rightfront_dist > d:
             state_description = 'case 6  - lfront and front'
             self.change_state(1)
             msg.angular.z = -turning_speed_wf_fast * 1.4
 
-        elif self.leftfront_dist < d and self.front_dist < d and self.rightfront_dist < d:
+        elif self.leftfront_dist < d and self.front_dist < fd and self.rightfront_dist < d:
             state_description = 'case 7  - lfront, front and rfront'
             self.change_state(1)
             msg.linear.x = cornering_speed_constant * 0
             msg.angular.z = -turning_speed_wf_fast
 
-        elif self.leftfront_dist < d and self.front_dist > d and self.rightfront_dist < d:
+        elif self.leftfront_dist < d and self.front_dist > fd and self.rightfront_dist < d:
             state_description = 'case 8  - lfront and rfront'
             self.change_state(0)
-            msg.linear.x = cornering_speed_constant * speedchange
-            msg.angular.z = turning_speed_wf_slow  # turn left to find wall
+            if self.front_dist < 2.0 * d:
+                msg.linear.x = 0.0
+                msg.angular.z = - turning_speed_wf_fast  # turn right to get out of diagonal corner
+            else:
+                msg.linear.x = cornering_speed_constant * speedchange
+                msg.angular.z = turning_speed_wf_slow  # turn left to find wall
     
         else:
             state_description = 'unknown case'
@@ -754,7 +764,7 @@ class AutoNav(Node):
         #des_waypoint = (float(waypoint_dict[max(waypoint_dict)][0]),
         #               float(waypoint_dict[max(waypoint_dict)][1]),
         #              float(waypoint_dict[max(waypoint_dict)][2]))
-        getTarget(des_waypoint)
+        #getTarget(des_waypoint)
         #self.getTarget(0.5,0.0,0.0)
         self.start()
     
