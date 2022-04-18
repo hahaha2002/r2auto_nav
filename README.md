@@ -5,21 +5,21 @@ Innoovation and Design Programme, National University of Singapore (NUS). <br/>
 
 --------------------------------------------------------WORK IN PROGRESS--------------------------------------------------------------
 ## Description
-The Tánkyu 2310i, developed by NUS IDP students from EG2310, is a modified Robotis Co. Turtlebot 3. It is augmented with LIDAR, NFC-detection, IR-detection and a flywheel firing system to accomplish its set objectives - Autonomous navigation within a closed and connected maze, locating a loading bay demarketed by NFC tags, and firing a ping-pong ball at a target with high IR-signature.
+The Tánkyu 2310i, developed by NUS IDP students from EG2310, is a modified Robotis Co. Turtlebot 3. It is augmented with LIDAR, NFC-detection, IR-detection and a flywheel firing system to accomplish its set objectives - Autonomous navigation within a closed and connected maze, locating a loading bay demarcated by NFC tags, and firing a ping-pong ball at a target with high IR-signature.
 
 In this repository, we are using Ubuntu 20.04.4, ROS2 Foxy and Python3.6 to explore a closed and connected maze using a left-wall following algorithm.
-You may check out our [Documentation](https://www.youtube.com/watch?v=dQw4w9WgXcQ&ab_channel=RickAstley) file for more details on our robot and it's mission.
+You may check out our [Documentation](https://www.youtube.com/watch?v=dQw4w9WgXcQ&ab_channel=RickAstley) file for more details on our robot and its mission.
 
 ## File Organisation
 - [navigation.py](https://github.com/hahaha2002/r2auto_nav/blob/main/navigationcombine.py) code contains the main system and wall-following logic. This code also communicates with the mission code to allow the Tánkyu 2310i to engage on the ir signature when the conditions are met.
-- [mission.py](https://github.com/hahaha2002/r2auto_nav/blob/main/mission.py) code initiates all the i2c connections and contain the firing algorithm. This code performs all necessary logic processing with the input from the NFC and IR detection systems and communicates the infomation to the navigation code to allow the Tánkyu 2310i to engage on the ir signature when the conditions are met.
-- [Ubuntu_Files](https://github.com/hahaha2002/r2auto_nav/tree/main/Ubuntu_Files) folder is an archive of the miscelleneous code that were tested but not implemented into the final system. The code are functional independently but requires some edits to integrate it into the final system.
+- [mission.py](https://github.com/hahaha2002/r2auto_nav/blob/main/mission.py) code initiates all the i2c connections and contain the firing algorithm. This code performs all necessary logic processing with the input from the NFC and IR detection systems and communicates the information to the navigation code to allow the Tánkyu 2310i to engage on the ir signature when the conditions are met.
+- [Ubuntu_Files](https://github.com/hahaha2002/r2auto_nav/tree/main/Ubuntu_Files) folder is an archive of the miscellaneous code that was tested but not implemented into the final system. The code are functional independently but requires some edits to integrate it into the final system.
 - [RPi_Files](https://github.com/hahaha2002/r2auto_nav/tree/main/RPi_Files) folder contains the [factory acceptance test codes](https://github.com/hahaha2002/r2auto_nav/tree/main/RPi_Files/fac_test), all required packages and experiment files for each system. 
-- [Original_Files](https://github.com/hahaha2002/r2auto_nav/tree/main/Original_Files) folder is an archive of the forked repository from [shihchengyen's r2auto_nav_repository](https://github.com/shihchengyen/r2auto_nav) and is not neccesary for the Tankyu 2310i's operations.
+- [Original_Files](https://github.com/hahaha2002/r2auto_nav/tree/main/Original_Files) folder is an archive of the forked repository from [shihchengyen's r2auto_nav_repository](https://github.com/shihchengyen/r2auto_nav) and is not necessary for the Tankyu 2310i's operations.
 
 ## Calibration and configuration
 ### Navigation Code
-Under 'Adjustable variables to calibrate wall follower', you may experiment with different parameters to calibrate the navigtion algorithm to suit your needs.
+Under 'Adjustable variables to calibrate wall follower', you may experiment with different parameters to calibrate the navigation algorithm to suit your needs.
 | Variable name| Description| Recommended value  |
 | ------------- |:-------------| ---:|
 | d | Distance from wall| 0.35 |
