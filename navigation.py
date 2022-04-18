@@ -79,7 +79,6 @@ state_dict_ = {
     'A': 'NFC Found, waiting to receive paylaod',
     'B': 'Payload received, continuing wall-following',
     'C': 'Hot target detected, initiating firing sequence',
-    'Cb': 'Hot target detected, waypoint dropped',
     'D': 'Target eliminated',
 }
 
@@ -182,12 +181,12 @@ class AutoNav(Node):
             self.nfc_callback,
             qos_profile_sensor_data)
         self.scan_subscription  # prevent unused variable warning
-        
+
         ### Map2base requirements
         self.declare_parameter('target_frame', 'base_footprint')
         self.target_frame = self.get_parameter(
         'target_frame').get_parameter_value().string_value
-    
+
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer,self, spin_thread=True)
         self.mapbase = None
@@ -201,20 +200,16 @@ class AutoNav(Node):
         # communicates with mission code to receive status updates
         if (msg.data == 'Detected'):
             isTargetDetected = True
-            isDoneShooting = False            
-            
+            isDoneShooting = False
             ## To put temperature detected and waypoint in a dictionary
             waypoint_dict[2] = position #make RPi send temp, replace 2 with that temp
             self.change_state('C')
-            
         elif (msg.data == 'FINISHED SHOOTING'):
             isDoneShooting = True
             isTargetDetected = False
             self.change_state('D')
-            
         else:
             isTargetDetected = False
-        
 
     def odom_callback(self, msg):
         global position
@@ -264,13 +259,12 @@ class AutoNav(Node):
         if msg.data == 'LOADING ZONE':
             isLoadingBayFound = True
             self.change_state('A')
-            
         if msg.data == 'FINISH LOADING':
             isDoneLoading = True
             self.change_state('B')
-    
+
     ## for publishing map2base (alternative way of obtaining yaw)
-    def timer_callback(self): 
+    def timer_callback(self):
         # create numpy array
         msg = Pose()
         from_frame_rel = self.target_frame
@@ -288,12 +282,12 @@ class AutoNav(Node):
             # self.get_logger().info(
                 # f'Could not transform {to_frame_rel} to {from_frame_rel}: {ex}')
             return
-        msg.position.x = self.mapbase.transform.translation.x 
+        msg.position.x = self.mapbase.transform.translation.x
         msg.position.y = self.mapbase.transform.translation.y
         msg.orientation = self.mapbase.transform.rotation
 
         self.map2base.publish(msg)
-            
+
     # function to rotate the TurtleBot
     def rotatebot(self, rot_angle):
         #self.get_logger().info('In rotatebot')
@@ -343,7 +337,7 @@ class AutoNav(Node):
         twist.angular.z = 0.0
         # stop the rotation
         self.publisher_.publish(twist)
-    
+
     # function to print navigation state
     def change_state(self,state):
         global state_, state_dict_
@@ -363,7 +357,6 @@ class AutoNav(Node):
     def pick_direction(self):
         global d, turning_speed_wf_fast, turningspeed_wf_slow, cornering_speed_constant, reverse_d, fd
         rclpy.spin_once(self)
-        
         # obtain distance from different directions of turtlebot
         self.laserFront = self.laser_range[354:359]
         self.laserFront = np.append(self.laserFront, self.laser_range[0:6])
@@ -372,7 +365,7 @@ class AutoNav(Node):
         self.rightfront_dist = np.nan_to_num(np.nanmean(self.laser_range[310:321]), copy = False, nan = 100)
         self.leftback_dist = np.nan_to_num(np.nanmean(self.laser_range[132:138]), copy = False, nan = 100)
         self.back_dist = np.nan_to_num(np.nanmean(self.laser_range[175:186]), copy = False, nan = 100)
-        
+
         # set up twist message as msg
         msg = Twist()
         msg.linear.x = 0.0
@@ -398,7 +391,6 @@ class AutoNav(Node):
                 self.change_state(0)
                 msg.linear.x =  speedchange
                 msg.angular.z = turning_speed_wf_slow  # turn left to find wall
-                
         elif self.front_dist < reverse_d:
             if self.back_dist < reverse_d:
                 self.change_state(5)
@@ -521,17 +513,17 @@ class AutoNav(Node):
             # initial move to find the appropriate wall to follow
             self.initialmove()
             
-            # record start time 
+            # record start time
             initial_time = time.time()
             start_time = initial_time + 10 # to ensure start point is accessible afterwards
             start_position = []
-            
+
             # loop for wall following
-            while rclpy.ok(): 
+            while rclpy.ok():
                 rclpy.spin_once(self)
-                
+
                 if self.laser_range.size != 0:
-                    # record starting position 
+                    # record starting position
                     if int(time.time()) == int(start_time):
                         self.stopbot()
                         start_position = position
@@ -544,7 +536,7 @@ class AutoNav(Node):
                         start_time = time.time()
                         start_position = position
                         print("Returned to start point without NFC, distance increased by 7cm")
-                    
+
                     # while there is no target detected, keep picking direction (do wall follow)
                     if not isTargetDetected :
                         self.pick_direction()
@@ -569,10 +561,10 @@ class AutoNav(Node):
 
                 # allow the callback functions to run
                 rclpy.spin_once(self)
-              
+
         # except Exception as e:
            # print(e)
- 
+
         # Ctrl-c detected
         finally:
             # stop moving
