@@ -95,21 +95,18 @@ bug_state_dict_ = {
     2: 'Halt',
 }
 
-## Waypoint dictionary
-waypoint_dict = {
-    1: 'nil'
-}
-
-#####
 ## Bug algorithm Neccessities
-
 bugSwitch = True
 isArrived = False
-
-# parameters
 fd = 0.3
 yaw_precision_ = math.pi / 90 # +/- 2 degree allowed
 dist_precision_ = 0.2
+#waypoint dictionary to track maximum temperature recorded and allows for overiding of same temps
+#key represents temperature, value represents the position
+waypoint_dict = {
+    1: 0.0,0.0,0.0
+}
+
 
 # publishers
 pub = None
@@ -137,11 +134,7 @@ def euler_from_quaternion(x, y, z, w):
 
     return roll_x, pitch_y, yaw_z  # in radians
 
-
-
-
 class AutoNav(Node):
-
     def __init__(self):
         super().__init__('auto_nav')
 
@@ -218,7 +211,6 @@ class AutoNav(Node):
         timer_period = 0.05
         self.timer = self.create_timer(timer_period, self.timer_callback)
 
-
     def target_callback(self, msg):
         global isTargetDetected, isDoneShooting, waypoint_dict,position
         # communicates with mission code to receive status updates
@@ -237,7 +229,6 @@ class AutoNav(Node):
             
         else:
             isTargetDetected = False
-        
 
     def odom_callback(self, msg):
         global position
@@ -610,10 +601,17 @@ class AutoNav(Node):
     ##########################################################################
     ##########################################################################
     ##########################################################################
-    # Bug algo works in gazebo but not IRL due to odom not resetting...
+    # Bug algo works in gazebo but not IRL due to odom not starting from 0,0,0
     # This algo should be able to navigate to waypoints dropped by RPi since ODOM will have a fixed offset
-    # Can be investigated further for future projects...
+    # Can be investigated further for future updates...
     
+    #Pseudocode to allow this code to run in real life, create a publisher subscriber pair to communicate temperatures above detecting threshold
+    #Take the maximum temperature detected and record the current position using odom subscriber
+    #Save these two values into the waypoint dictionary
+    #amend getTarget to draw the max value from the dictionary
+    
+    
+    #subscriber to scan topic
     def bug_scan_callback(self, msg):
         global regions_
         # create numpy array
@@ -638,47 +636,14 @@ class AutoNav(Node):
         'left':   min(min(msg.ranges[85:96]), 10),
         }
 
-    # function to obtain target with x,y,z ccoordinates
+    # function to obtain target waypoint with x,y,z coordinates
     def getTarget(self, x_coord,y_coord,z_coord):
         self.desired_position_ = Point()
         self.desired_position_.x = x_coord
         self.desired_position_.y = y_coord
         self.desired_position_.z = z_coord
-
-    # main bug algo block
-    def start(self):
-        global isArrived, waypoint_dict
-        
-        try:
-            rclpy.spin_once(self)
-            print("Acquiring lidar data")
-            while (self.laser_range.size == 0):    
-                rclpy.spin_once(self)
-            
-            while not isArrived:
-                if bug_state_ == 0: # turn
-                    self.fix_yaw(self.desired_position_)
-                elif bug_state_ == 1: # go straight
-                    self.go_straight_ahead(self.desired_position_)
-                elif bug_state_ == 2: # halt
-                    self.stopbot()
-                    isArrived = True
-                    pass
-                elif bug_state_ == -1: # initiation
-                    self.change_bug_state(0)
-                else:
-                    print('Unknown bug state!')
-                    pass
-                
-        except Exception as e:
-            print(e)
-
-        # Ctrl-c detected
-        finally:
-            # stop moving
-            print(waypoint_dict)
-            self.stopbot()
-            
+    
+    #subscribe to current position
     def clbk_odom(self, msg):
         global position_
         global yaw_
@@ -704,12 +669,12 @@ class AutoNav(Node):
             # turn clockwise if deired yaw +ve
             twist_msg.angular.z = 0.3 if err_yaw > 0 else -0.3
         self.bug_publisher_.publish(twist_msg)
-
         # state change conditions
         if math.fabs(err_yaw) <= yaw_precision_:
             #print ('Yaw error: [%s]' % err_yaw)
             self.change_bug_state(1)
     
+    #move forward
     def go_straight_ahead(self,des_pos):
         global yaw_, pub, yaw_precision_, bug_state_, fd, bugSwitch
         # compute desired yaw and difference with current yaw
@@ -724,26 +689,27 @@ class AutoNav(Node):
                 twist_msg = Twist()
                 twist_msg.linear.x = 0.2
                 self.bug_publisher_.publish(twist_msg)
-            # change bug state if detect obstacle in front of turtlebot
+            # switch to wall following algorithm if obstacle is detected in front of turtlebot
             elif self.front_dist < fd:
                 self.stopbot()
                 self.change_bug_switch(0)
                 self.bugWall()
                 
-        # bug_state change conditions
+        # if drifting off course, change state to fix yaw
         if math.fabs(err_yaw) > yaw_precision_:
             #print ('Yaw error: [%s]' % err_yaw)
             self.change_bug_state(0)
+        # if arrived at target waypoint, halt
         if err_pos < dist_precision_:
             self.stopbot()
             self.change_bug_state(2)
  
+    #normalising yaw to angle
     def normalize_angle(self,angle):
         if(math.fabs(angle) > math.pi):
             angle = angle - (2 * math.pi * angle) / (math.fabs(angle))
         return angle
 
-    
     def check_whether_to_switch(self):
             rclpy.spin_once(self)
             desired_yaw = math.atan2(self.desired_position_.y - position_.y, self.desired_position_.x - position_.x)
@@ -767,30 +733,22 @@ class AutoNav(Node):
                 #print('between 30 and 90 - to the right')    
                 return 1
             return 0
-            
+    
+    #Boolean value to change current mode(Bug/wall follow)
     def change_bug_switch(self,switch):
         global bugSwitch
         if switch == 0:
             bugSwitch = False
         elif switch ==1:
             bugSwitch = True
-    
+    # state change conditions for a neat logger
     def change_bug_state(self,bug_state):
         global bug_state_
         if bug_state is not bug_state_:
             print('Bug algorithm - [%s] - %s' % (bug_state, bug_state_dict_[bug_state]))
         bug_state_ = bug_state
-    
-    
-    def bugAlgo(self):
         
-        #des_waypoint = (float(waypoint_dict[max(waypoint_dict)][0]),
-        #               float(waypoint_dict[max(waypoint_dict)][1]),
-        #              float(waypoint_dict[max(waypoint_dict)][2]))
-        #getTarget(des_waypoint)
-        #self.getTarget(0.5,0.0,0.0)
-        self.start()
-    
+    # Determines which mode (bug/wall follower) to use
     def bugWall(self):
         checkVal = self.check_whether_to_switch()
         while not checkVal:
@@ -799,15 +757,55 @@ class AutoNav(Node):
         print('Bug algorithm - [%s] - %s' %(3,'Switch'))
         self.change_bug_switch(1)
 
-
+    # main bug algorithm logic block
+    def start_bug(self):
+        global isArrived, waypoint_dict
+        #This part is commented out to allow bug algo to work in gazebo
+        #uncommend this part once you are able to get the RPi to drop waypoints in real life
+        
+        #des_waypoint = (float(waypoint_dict[max(waypoint_dict)][0]),
+        #               float(waypoint_dict[max(waypoint_dict)][1]),
+        #              float(waypoint_dict[max(waypoint_dict)][2]))
+        #getTarget(des_waypoint)
+        
+        #This part is short circuited
+        self.getTarget(0.5,0.0,0.0)
+        try:
+            #ensure we have lidar data before continuing
+            rclpy.spin_once(self)
+            print("Acquiring lidar data")
+            while (self.laser_range.size == 0):    
+                rclpy.spin_once(self)
+            #While not at the target waypoint
+            while not isArrived:
+                if bug_state_ == 0: #rotate to fix heading
+                    self.fix_yaw(self.desired_position_)
+                elif bug_state_ == 1: # move forward
+                    self.go_straight_ahead(self.desired_position_)
+                elif bug_state_ == 2: # arrived, halt
+                    self.stopbot()
+                    isArrived = True
+                    pass
+                elif bug_state_ == -1: # initiation, for a neat logger
+                    self.change_bug_state(0)
+                else:
+                    print('Unknown bug state!')
+                    pass
+        #To catch exceptions caused by invalid lidar data
+        except Exception as e:
+            print(e)
+        # Ctrl-c detected
+        finally:
+            # stop moving
+            print(waypoint_dict)
+            self.stopbot()
+            
 def main(args=None):
     rclpy.init(args=args)
     auto_nav = AutoNav()
-    auto_nav.mover()
-    # auto_nav.bugAlgo()
-    # Destroy the node explicitly
-    # (optional - otherwise it will be done automatically
-    # when the garbage collector destroys the node object)
+    #auto_nav.mover()
+    #Choose when to start the bug algorithm, preferably after locating the NFC
+    auto_nav.start_bug()
     auto_nav.destroy_node()
     rclpy.shutdown()
 
