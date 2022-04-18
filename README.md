@@ -3,7 +3,7 @@ ROS2 code for Tánkyu 2310i <br/>
 EG2310 - Fundamentals of Systems Design, AY 21/22, <br/>
 Innoovation and Design Programme, National University of Singapore (NUS). <br/>
 
----------------------------------WORK IN PROGRESS---------------------------------
+--------------------------------------------------------WORK IN PROGRESS--------------------------------------------------------------
 ## Description
 The Tánkyu 2310i, developed by NUS IDP students from EG2310, is a modified Robotis Co. Turtlebot 3. It is augmented with LIDAR, NFC-detection, IR-detection and a flywheel firing system to accomplish its set objectives - Autonomous navigation within a closed and connected maze, locating a loading bay demarketed by NFC tags, and firing a ping-pong ball at a target with high IR-signature.
 
@@ -11,9 +11,11 @@ In this repository, we are using Ubuntu 20.04.4, ROS2 Foxy and Python3.6 to expl
 You may check out our [Documentation](https://www.youtube.com/watch?v=dQw4w9WgXcQ&ab_channel=RickAstley) file for more details on our robot and it's mission.
 
 ## File Organisation
-- navigationcombine.py file contains the wall-following logic and bug 0 algorithm. This code also communicates with the targeting file to allow the Tánkyu 2310i to engage the target when the conditions are met.
-- integration4.py contains the firing algorithm along with all i2c inputs. This code performs all necessary logic processing with the input from the NFC and IR detection systems and communicates the infomation to the navigation code to allow the Tánkyu 2310i to engage the target when the conditions are met.
-- Original Files folder is an archive of the forked repository from shihchengyen's r2auto_nav_repository and is not neccesary for the Tankyu 2310i's operations.
+- [navigation.py](https://github.com/hahaha2002/r2auto_nav/blob/main/navigationcombine.py) code contains the main system and wall-following logic. This code also communicates with the mission code to allow the Tánkyu 2310i to engage on the ir signature when the conditions are met.
+- [mission.py](https://github.com/hahaha2002/r2auto_nav/blob/main/mission.py) code initiates all the i2c connections and contain the firing algorithm. This code performs all necessary logic processing with the input from the NFC and IR detection systems and communicates the infomation to the navigation code to allow the Tánkyu 2310i to engage on the ir signature when the conditions are met.
+- [Ubuntu_Files](https://github.com/hahaha2002/r2auto_nav/tree/main/Ubuntu_Files) folder is an archive of the miscelleneous code that were tested but not implemented into the final system. The code are functional independently but requires some edits to integrate it into the final system.
+- [RPi_Files](https://github.com/hahaha2002/r2auto_nav/tree/main/RPi_Files) folder contains the [factory acceptance test codes](https://github.com/hahaha2002/r2auto_nav/tree/main/RPi_Files/fac_test), all required packages and experiment files for each system. 
+- [Original_Files](https://github.com/hahaha2002/r2auto_nav/tree/main/Original_Files) folder is an archive of the forked repository from [shihchengyen's r2auto_nav_repository](https://github.com/shihchengyen/r2auto_nav) and is not neccesary for the Tankyu 2310i's operations.
 
 ## Calibration and configuration
 ### Navigation Code
@@ -29,7 +31,7 @@ Under 'Adjustable variables to calibrate wall follower', you may experiment with
 | snaking_radius | Distance from wall before correcting drift | d - 0.07|
 | cornering_speed_constant | Coefficient of speedchange during cornering to prevent over/under steer| 0.5|
 
-### Targeting Code
+### Mission Code
 Under 'Adjustable variables to calibrate targeting' you may experiment with different parameters to calibrate the targeting algorithm to suit your needs.
 | Variable name| Description| Recommended value  |
 | ------------- |:-------------| ---:|
@@ -57,8 +59,9 @@ git clone https://github.com/hahaha2002/r2auto_nav.git
 cd colcon_ws
 colcon build
 ```
-2. Copy the RPi_files folder to the RPi: <br/>
+2. Copy mission.py and the RPi_files folder to the RPi: <br/>
 ``` 
+scp -r <path to r2auto_nav directory>/mission.py ubuntu@<RPi IP address>:~/turtlebot3/src 
 scp -r <path to r2auto_nav directory>/RPi_files ubuntu@<RPi IP address>:~/turtlebot3/src 
 ```
 3. Build the package on RPi: <br/>
@@ -75,8 +78,8 @@ sudo systemctl enable pigpiod
 ### Running Instructions
 1. Ssh into the RPi, `ssh ubuntu@<RPi IP Address>`
 2. On the RPi, initiate the bring up `ros2 launch turtlebot3_bringup robot.launch.py'
-3. On RPi, in the RPi_files directory, Start the targeting code `python3 integration4.py`.
-4. On Ubuntu, in the r2auto_nav directory, Start the navigation code `python3 navigationcombine2.py`.
+3. On RPi, in the RPi_files directory, Start the targeting code `python3 mission.py`.
+4. On Ubuntu, in the r2auto_nav directory, Start the navigation code `python3 navigation.py`.
 
 
 
