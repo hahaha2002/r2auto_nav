@@ -9,7 +9,7 @@ import adafruit_amg88xx
 import RPi.GPIO as GPIO
 
 ## import NFC requirements
-from pn532 import *
+from Modular_Codes.nfc.pn532 import *
 
 ## import servo requirements
 import pigpio
