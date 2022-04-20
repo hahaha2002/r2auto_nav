@@ -8,7 +8,7 @@ def main(args=None):
     rclpy.init(args=args)
     try:
         ## Initialise NFC sensor
-        pn532 = PN532_I2C(debug=False, reset=20, req=16)
+        pn532 = PN532_I2C(debug=False, reset=4, req=17)
         pn532.SAM_configuration()
         print('Waiting for RFID/NFC card...')
         while True:
