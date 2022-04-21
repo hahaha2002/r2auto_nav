@@ -401,7 +401,7 @@ class AutoNav(Node):
                 self.change_state(5)
                 msg.linear.x =  -0.7 * speedchange
                 msg.angular.z = 0.0
-            
+
         elif self.leftfront_dist > d and self.front_dist < fd and self.rightfront_dist > d:
             state_description = 'case 2 - front'
             self.change_state(1)
@@ -453,12 +453,12 @@ class AutoNav(Node):
             else:
                 msg.linear.x = cornering_speed_constant * speedchange
                 msg.angular.z = turning_speed_wf_slow  # turn left to find wall
-    
+
         else:
             state_description = 'unknown case'
             print('Unkown case')
             pass
-        
+
         # Send velocity command to the robot
         self.publisher_.publish(msg)
 
@@ -469,7 +469,7 @@ class AutoNav(Node):
         twist.angular.z = 0.0
         self.publisher_.publish(twist)
 
-    # function for bot to locate first wall to start wall following  
+    # function for bot to locate first wall to start wall following
     def initialmove(self):
         global d
         # split lidar into 4 regions
@@ -485,9 +485,9 @@ class AutoNav(Node):
         # find nearest wall
         self.closest_wall = self.laser_regions.index(min(self.laser_regions))
         self.rotatebot(90*self.closest_wall)
-        
+
         # move forward towards the wall
-        while self.front_dist > d:    
+        while self.front_dist > d:
             self.laserFront = self.laser_range[315:359]
             self.laserFront = np.append(self.laserFront, self.laser_range[0:46])
             self.front_dist = np.nan_to_num(np.nanmean(self.laserFront), copy = False, nan=100)
@@ -495,11 +495,11 @@ class AutoNav(Node):
             twist.angular.z = 0.0
             self.publisher_.publish(twist)
             rclpy.spin_once(self)
-            
+
         self.stopbot()
         self.rotatebot(-45) # to ensure robot does left wall following
-        
-        
+
+
     # main navigation block
     def mover(self):
         global myoccdata, isTargetDetected, isDoneShooting, isLoadingBayFound, isDoneLoading, position, d
@@ -507,12 +507,12 @@ class AutoNav(Node):
             rclpy.spin_once(self)
             # ensure that we have a valid lidar data before we start wall follow logic
             print("Acquiring lidar data")
-            while (self.laser_range.size == 0):    
+            while (self.laser_range.size == 0):
                 rclpy.spin_once(self)
 
             # initial move to find the appropriate wall to follow
             self.initialmove()
-            
+
             # record start time
             initial_time = time.time()
             start_time = initial_time + 10 # to ensure start point is accessible afterwards

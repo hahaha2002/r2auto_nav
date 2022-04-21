@@ -9,7 +9,7 @@ import adafruit_amg88xx
 import RPi.GPIO as GPIO
 
 ## import NFC requirements
-from Modular_Codes.nfc.pn532 import *
+from pn532 import *
 
 ## import servo requirements
 import pigpio
@@ -78,6 +78,7 @@ motor_pin1 = 13
 motor_pin2 = 19
 GPIO.setup(motor_pin1, GPIO.OUT)
 GPIO.setup(motor_pin2, GPIO.OUT)
+
 ## Set up button
 button_pin_out = 23
 button_pin_in = 24
@@ -145,19 +146,16 @@ class mission(Node):
     def send_firing_status(self):
         global target_status
         msg = String()
-        
-        ###############################################
-        ###############################################
         msg.data = target_status
         self.firing_publisher.publish(msg)
 
     def lidar_callback(self, msg):
         laser_range = np.array(msg.ranges)
-        laser_front = laser_range[0:3]
-        np.append(laser_front, laser_range[-1:-3:-1])
+        laser_front = laser_range[0:4]
+        np.append(laser_front, laser_range[-1:-4:-1])
         laser_front[laser_front==0] = np.nan
         try:
-            self.distance = np.nanmean(laser_front)
+            self.distance = np.nanmin(laser_front)
         except ValueError:
             self.distance = 9999
 
@@ -348,7 +346,7 @@ class mission(Node):
                 for temp in row:
                     if temp > detecting_threshold:
                         target_found = True
-        
+
 
         # Target found, communicate with wallfollower to stop working
         target_status = target_detected_msg
@@ -395,7 +393,7 @@ class mission(Node):
     def targetting(self):
         global message_sent, servo_pin, motor_pin, ir_offset
         self.rotate_angle = ir_offset
-        self.d = 0.8
+        self.d = 0.7
         print('Mission - [4] - Searching for "Hot target"...')
 
         # find the target
@@ -461,7 +459,7 @@ class mission(Node):
         # Stop the DC Motor
         GPIO.output(motor_pin1, 0)
         GPIO.output(motor_pin2, 0)
-        print('Mission - [9b] - Stop motors')        
+        print('Mission - [9b] - Stop motors')
         #self.get_logger().info("Stopped the DC Motor")
 
         # Cleanup all GPIO
