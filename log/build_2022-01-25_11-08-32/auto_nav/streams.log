@@ -1,0 +1,9 @@
+[0.372s] Invoking command in '/home/kjang/colcon_ws/src/auto_nav/auto_nav': CONDA_PROMPT_MODIFIER=(base) PYTHONPATH=/home/kjang/colcon_ws/src/auto_nav/auto_nav/install/auto_nav/lib/python3.8/site-packages:${PYTHONPATH} /usr/bin/python3 setup.py egg_info --egg-base build/auto_nav build --build-base /home/kjang/colcon_ws/src/auto_nav/auto_nav/build/auto_nav/build install --prefix /home/kjang/colcon_ws/src/auto_nav/auto_nav/install/auto_nav --record /home/kjang/colcon_ws/src/auto_nav/auto_nav/build/auto_nav/install.log --single-version-externally-managed
+[0.479s] running egg_info
+[0.480s] writing build/auto_nav/auto_nav.egg-info/PKG-INFO
+[0.480s] writing dependency_links to build/auto_nav/auto_nav.egg-info/dependency_links.txt
+[0.480s] writing entry points to build/auto_nav/auto_nav.egg-info/entry_points.txt
+[0.480s] writing requirements to build/auto_nav/auto_nav.egg-info/requires.txt
+[0.480s] writing top-level names to build/auto_nav/auto_nav.egg-info/top_level.txt
+[0.497s] error: package directory 'auto_nav' does not exist
+[0.505s] Invoked command in '/home/kjang/colcon_ws/src/auto_nav/auto_nav' returned '1': CONDA_PROMPT_MODIFIER=(base) PYTHONPATH=/home/kjang/colcon_ws/src/auto_nav/auto_nav/install/auto_nav/lib/python3.8/site-packages:${PYTHONPATH} /usr/bin/python3 setup.py egg_info --egg-base build/auto_nav build --build-base /home/kjang/colcon_ws/src/auto_nav/auto_nav/build/auto_nav/build install --prefix /home/kjang/colcon_ws/src/auto_nav/auto_nav/install/auto_nav --record /home/kjang/colcon_ws/src/auto_nav/auto_nav/build/auto_nav/install.log --single-version-externally-managed
