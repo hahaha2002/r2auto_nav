@@ -1,21 +1,27 @@
 # r2auto_nav
-ROS2 code for Tánkyu 2310i <br/>
+Tánkyu 2310i <br/>
+Group 2, Studio 2 <br/>
+Ang Kai Jun, David Chong Joon Wei, Ha Zhe Li, Rayner Lim Fang Yuh, Wang Yanxiao Austin <br/>
+
 EG2310 - Fundamentals of Systems Design, AY 21/22, <br/>
 Innoovation and Design Programme, National University of Singapore (NUS). <br/>
 
---------------------------------------------------------WORK IN PROGRESS--------------------------------------------------------------
+
+
 ## Description
 The Tánkyu 2310i, developed by NUS IDP students from EG2310, is a modified Robotis Co. Turtlebot 3. It is augmented with LIDAR, NFC-detection, IR-detection and a flywheel firing system to accomplish its set objectives - Autonomous navigation within a closed and connected maze, locating a loading bay demarcated by NFC tags, and firing a ping-pong ball at a target with high IR-signature.
 
 In this repository, we are using Ubuntu 20.04.4, ROS2 Foxy and Python3.6 to explore a closed and connected maze using a left-wall following algorithm.
-You may check out our [Documentation](https://www.youtube.com/watch?v=dQw4w9WgXcQ&ab_channel=RickAstley) file for more details on our robot and its mission.
+You may check out our project report under the [Documentations](https://github.com/hahaha2002/r2auto_nav/tree/main/Documentations) folder for more details on our robot and its mission.
 
 ## File Organisation
+- [Documentations](https://github.com/hahaha2002/r2auto_nav/tree/main/Documentations) folder contain all the documentation of the Tánkyu 2310i, this includes the project report, assembly manual, full software setup guide and end user documentation.
 - [navigation.py](https://github.com/hahaha2002/r2auto_nav/blob/main/navigationcombine.py) code contains the main system and wall-following logic. This code also communicates with the mission code to allow the Tánkyu 2310i to engage on the ir signature when the conditions are met.
 - [mission.py](https://github.com/hahaha2002/r2auto_nav/blob/main/mission.py) code initiates all the i2c connections and contain the firing algorithm. This code performs all necessary logic processing with the input from the NFC and IR detection systems and communicates the information to the navigation code to allow the Tánkyu 2310i to engage on the ir signature when the conditions are met.
 - [Ubuntu_Files](https://github.com/hahaha2002/r2auto_nav/tree/main/Ubuntu_Files) folder is an archive of the miscellaneous code that was tested but not implemented into the final system. The code are functional independently but requires some edits to integrate it into the final system.
-- [RPi_Files](https://github.com/hahaha2002/r2auto_nav/tree/main/RPi_Files) folder contains the [factory acceptance test codes](https://github.com/hahaha2002/r2auto_nav/tree/main/RPi_Files/fac_test), all required packages and experiment files for each system. 
+- [RPi_Files](https://github.com/hahaha2002/r2auto_nav/tree/main/RPi_Files) folder contains the [factory acceptance test codes](https://github.com/hahaha2002/r2auto_nav/tree/main/RPi_Files/fac_test), all required packages and other test codes for each individual subsystem. 
 - [Original_Files](https://github.com/hahaha2002/r2auto_nav/tree/main/Original_Files) folder is an archive of the forked repository from [shihchengyen's r2auto_nav_repository](https://github.com/shihchengyen/r2auto_nav) and is not necessary for the Tankyu 2310i's operations.
+
 
 ## Calibration and configuration
 ### Navigation Code
@@ -44,10 +50,13 @@ Under 'Adjustable variables to calibrate targeting' you may experiment with diff
 | ir_offset | Offset angle for each IR sensor orientation (0°→0, 45°→31, 90°→69) | 31.0|
 
 ## Operating Instructions
-Tested on Ubuntu 20.04 - ROS2 Foxy
+
 ### Installation
+Tested on Ubuntu 20.04 - ROS2 Foxy <br/>
+For beginners, follow our step-by-step software setup guide in our [documentations](https://github.com/hahaha2002/r2auto_nav/tree/main/Documentations) folder.<br/>
+For M1 MacBook users, refer to our [video guide](https://youtu.be/suntoEurFio) for Ubuntu setup and installation. <br/>
+
 1. Install Ubuntu 20.04 and ROS 2 Foxy using the instructions in Section 3.1 of the [Robotis e-manual](https://emanual.robotis.com/docs/en/platform/turtlebot3/quick-start/#pc-setup) (Ensure you click on the "Foxy" tab).
-For MacBook users, fret not as I have made it through this module with my M1 Macbook Air and have created a [video guide](https://youtu.be/suntoEurFio) to assist you in setting up ubuntu that allows for full functionality with all required applications.
 3. Using Ubuntu, complete the RPi in Section 3.2
 4. Using Ubuntu, complete the OpenCR setup in Section 3.3 
 
