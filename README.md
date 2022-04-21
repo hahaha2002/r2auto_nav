@@ -5,6 +5,7 @@ Ang Kai Jun, David Chong Joon Wei, Ha Zhe Li, Rayner Lim Fang Yuh, Wang Yanxiao 
 
 EG2310 - Fundamentals of Systems Design, AY 21/22, <br/>
 Innoovation and Design Programme, National University of Singapore (NUS). <br/>
+![Screen_Shot_2022-04-22_at_00 24 10_AM-removebg-preview](https://user-images.githubusercontent.com/98021799/164507042-20e43ebc-5e01-4274-ae9d-c0b32a4be674.png)
 
 
 
