@@ -71,8 +71,8 @@ colcon build
 ```
 2. Copy mission.py and the RPi_files folder to the RPi: <br/>
 ``` 
-scp -r <path to r2auto_nav directory>/mission.py ubuntu@<RPi IP address>:~/turtlebot3/src 
-scp -r <path to r2auto_nav directory>/RPi_files ubuntu@<RPi IP address>:~/turtlebot3/src 
+scp -r <path to r2auto_nav directory>/mission.py ubuntu@<RPi IP address>:~/turtlebot_ws/src 
+scp -r <path to r2auto_nav directory>/RPi_files ubuntu@<RPi IP address>:~/turtlebot_ws/src 
 ```
 3. Build the package on RPi: <br/>
 ``` 
